@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="GBK">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <title>Document</title>
+</head>
+
+<body>
+    <script src='seed.js'></script>
+    <script>
+    // 
+    Seed.config({
+        base: 'https://www.baifubao.com',
+        alias: {
+            zepto: '/static/group/js/mobile/inline/zapto.js',
+            vue: '/static/group/js/mobile/inline/vue.js',
+            normalize: 'http://cdn.staticfile.org/normalize/3.0.1/normalize.css'
+        },
+        map: []
+            //expires: +new Date
+    });
+
+    Seed.use(['normalize', 'zepto', 'vue'], function function_name(argument) {
+
+    });
+    </script>
+</body>
+
+</html>
