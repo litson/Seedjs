@@ -8,23 +8,43 @@
 </head>
 
 <body>
+    <h3>
+        base:
+    </h3>
+    <p>{{base}}</p>
+    <h3>
+        alias:
+    </h3>
+    <ul>
+        <li v-repeat='item : alias'>{{item}}</li>
+    </ul>
     <script src='seed.js'></script>
     <script>
     // 
-    Seed.config({
+
+    var data = {
         base: 'https://www.baifubao.com',
         alias: {
-            zepto: '/static/group/js/mobile/inline/zapto.js',
+            zepto: '/static/group/js/mobile/inline/zapto.js?ver=20150326',
             vue: '/static/group/js/mobile/inline/vue.js',
             normalize: 'http://cdn.staticfile.org/normalize/3.0.1/normalize.css'
         },
-        map: []
-            //expires: +new Date
-    });
+        map: [/^(.*\.(?:css|js))(.*)$/i, "$1?20150326"] //,
+            // expires: 1427700190021 // +new Date
+    };
 
-    Seed.use(['normalize', 'zepto', 'vue'], function function_name(argument) {
+    Seed
+        .config(data)
+        .openRealtimeDebugMode()
+        .use(['normalize', 'zepto', 'vue'], function() {
 
-    });
+            var vm = new Vue({
+                data: data,
+                el: 'body'
+            });
+
+
+        });
     </script>
 </body>
 

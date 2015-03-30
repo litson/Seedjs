@@ -47,16 +47,16 @@
             if (getType(ids) === 'string') {
                 ids = [ids];
             } else {
-                log('error', '[类型错误]请提供一个文件名或者文件名数组！');
+                log('warn', '[类型错误]请提供一个文件名或者文件名数组！');
                 return false;
             }
         };
 
-        log('\n原始id list：\n', ids);
+        log('原始数据：', ids);
 
         ids = parseIds(ids);
 
-        log('\n路由寻找到的id list\n', ids);
+        log('路由寻找到：', ids);
 
         ids = ids.filter(function(item) {
             if (!doc.getElementById(item)) {
@@ -101,8 +101,12 @@
         return seed;
     };
 
-
+    /**
+     * [openRealtimeDebugMode description]
+     * @return {[type]} [description]
+     */
     function openRealtimeDebugMode() {
+        log('============ 已开启无缓存模式 ============');
         data.expires = +new Date;
         return seed;
     };
@@ -118,6 +122,17 @@
     };
 
     /**
+     * [parseMap description]
+     * @param  {[type]} id [description]
+     * @return {[type]}    [description]
+     */
+    function parseMap(id) {
+        var map = data.map;
+        var result = id;
+        return result;
+    };
+
+    /**
      * [parseIds description]
      * @param  {[type]} ids [description]
      * @return {[type]}     [description]
@@ -125,19 +140,55 @@
     function parseIds(ids) {
         var result = [];
         ids.forEach(function(item, index) {
-            if (ABSOLUTE_RE.test(item)) {
-                result.push(item);
-            } else {
+
+            /**
+             * 104 === h ( http, https )
+             * 46  === . ( ./ )
+             * 47  === / ( / )
+             */
+            // var charCode = item.charCodeAt(0);
+
+            var item = item.trim();
+
+            if (!ABSOLUTE_RE.test(item)) {
                 // 如果非绝对路径，则先在别名中查找
                 var relative = parseAlias(item);
                 // 如果别名中已存在该路径，则使用
-                relative = relative ? relative : item;
+                item = relative ? relative : item;
                 // 再做一次十分是绝对路径的检测，因为允许在别名中配置其他‘绝对路径的文件’；
-                result.push((ABSOLUTE_RE.test(relative) ? relative : data.base + relative));
+                item = (ABSOLUTE_RE.test(item) ? item : data.base + item);
+                // TODO:匹配映射，去掉版本号什么的。
+                item = parseMap(item);
             }
+
+            result.push(item);
+
+
         });
         return result;
     };
+
+    /**
+     * 对比过期时间
+     * @param  {[type]} ms [description]
+     * @return {[type]}    是否过期，未过期false，已过期true
+     */
+    function hasExpired(ms) {
+        var expire = data.expires;
+        // 如果用户未设置更新时间
+        if (!expire) {
+            return false;
+        }
+        expire = (getType(expire) === 'date') ? expire : new Date(expire);
+
+        // 判断是不是invlid date,列举了3中方法。。
+        // expire = (expire.getDate().toString() === 'NaN') ? 0 : (+expire);
+        // expire = (Date.prototype.toString.call(expire) === 'Invalid Date') ? 0 : (+expire);
+        expire = (expire.valueOf().toString() === 'NaN') ? 0 : (+expire);
+
+        // 用户设置了过期时间，则对比是否已过期
+        return ms < data.expires;
+    }
 
     /**
      * [executeCode description]
@@ -149,20 +200,20 @@
 
         var isCSS = IS_CSS_RE.test(uid);
         var fileType;
-        var fileWayType;
+        // var fileWayType;
         var fileWayValue;
         var node;
         var target;
 
         isCSS
-            ? (fileType = 'link', fileWayType = 'rel', fileWayValue = 'stylesheet', target = header) : (fileType = 'script', fileWayType = 'type', fileWayValue = 'text/javascript', target = body);
+            ? (fileType = 'style', fileWayValue = 'text/css', target = header) : (fileType = 'script', fileWayValue = 'text/javascript', target = body);
 
         node = doc.createElement(fileType);
         node.id = uid;
-        node[fileWayType] = fileWayValue;
+        node.type = fileWayValue;
         target.appendChild(node);
         node.innerHTML = codeString;
-        log('\n', uid, '被加载并执行\n')
+        log('已执行：', uid);
     };
 
     /**
@@ -175,9 +226,8 @@
         var codeStringQueue = [];
         var fns = [];
 
-        // 打包成一个函数队列
-        ids.forEach(function(id, index) {
-            var fn = function(next) {
+        var fnWrapperFromRemote = function(id) {
+            return function(next) {
                 getFile(id, function(codeString) {
                     codeStringQueue.push({
                         data: codeString,
@@ -188,18 +238,53 @@
                 }, function() {
                     next();
                 });
-            };
-
-            if (seed.support && ls.getItem(id)) {
-                fn = function(next) {
-                    codeStringQueue.push({
-                        data: ls.getItem(id),
-                        id: id
-                    });
-                    next();
-                };
             }
-            fns.push(fn);
+        };
+
+        var fnWrapperFromLocal = function(id) {
+            return function(next) {
+                codeStringQueue.push({
+                    data: ls.getItem(id),
+                    id: id
+                });
+                next();
+            }
+        };
+
+        var needLoadData = (function() {
+            // 如果不支持localstorge
+            if (!seed.support) {
+                return true;
+            }
+
+            // 判断是否过期
+            // 获取本地文件的最后修改时间，如果没有则为0；
+            var expire = ls.getItem('__seed_expire__');
+            expire = expire ? expire : 0;
+
+            // 如果已过期，则不能从本地取
+            if (hasExpired(expire)) {
+                // 重新设置过期时间
+                ls.setItem('__seed_expire__', data.expires);
+                return true;
+            }
+            return false;
+        })();
+
+
+        // 打包成一个函数队列
+        ids.forEach(function(id) {
+
+            if (needLoadData) {
+                fns.push(fnWrapperFromRemote(id));
+            } else {
+                if (seed.support && !ls.getItem(id)) {
+                    fns.push(fnWrapperFromRemote(id));
+                } else {
+                    fns.push(fnWrapperFromLocal(id));
+                }
+            }
+
         });
 
         // 函数队列追加一个函数，待完成后执行回调
@@ -256,12 +341,14 @@
      * @return {[type]}          [description]
      */
     function getFile(url, success, error) {
+        log('正在通过AJAX加载：', url);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 xhr.onreadystatechange = noop;
                 if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+                    log('已加载：', url);
                     success && success(xhr.responseText, xhr);
                 } else {
                     getFileError(xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, error);
@@ -280,7 +367,7 @@
      * @return {[type]}       [description]
      */
     function getFileError(error, type, xhr, callBack) {
-        log('加载文件失败！', arguments);
+        log('warn', '资源加载失败！', arguments);
         callBack && callBack(error, type, xhr);
     };
 
@@ -290,8 +377,11 @@
      */
     function log( /* type [, arg1, arg2...etc. ]*/ ) {
         var args = Array.prototype.slice.call(arguments);
-        var firstArg = args.shift();
-        var isSpecified = !!~['warn', 'info', 'error', 'group', 'groupEnd'].indexOf(firstArg);
-        return seed.DEBUG && console[isSpecified ? firstArg : 'log'].apply(console, isSpecified ? args : arguments);
+        var type = args[0];
+        var isSpecified = !!~['warn', 'info', 'error', 'group', 'groupEnd'].indexOf(type);
+        args = isSpecified ? (args.shift(), args) : args;
+        args.unshift('[Debug:]');
+        return seed.DEBUG && console[isSpecified ? type : 'log'].apply(console, args);
     };
+
 }(window);
