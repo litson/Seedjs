@@ -1,5 +1,7 @@
 # Seedjs
 
+JavaScript library for seeding static files into localStorge.
+
 ## TODO
 - JSONP support.
 - Combine in native.
