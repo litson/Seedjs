@@ -9,9 +9,6 @@
  *     5.expires 可否 改为 version方式
  *     6.deal buttom top
  *
- * @param  {[type]} root      [description]
- * @param  {[type]} undefined [description]
- * @return {[type]}           [description]
  */
 ! function __seed_package__(root, undefined) {
 
@@ -46,7 +43,12 @@
 
     data.base = location.origin;
 
-
+    /**
+     * [use description]
+     * @param  {[type]} ids      [description]
+     * @param  {[type]} callBack [description]
+     * @return {[type]}          [description]
+     */
     function use(ids, callBack) {
         var ids = ids;
         if (!Array.isArray(ids)) {
@@ -87,7 +89,11 @@
         return seed;
     };
 
-
+    /**
+     * [config description]
+     * @param  {[type]} setting [description]
+     * @return {[type]}         [description]
+     */
     function config(setting) {
         var key;
         var k;
@@ -108,15 +114,20 @@
         return seed;
     };
 
-
+    /**
+     * [openRealtimeDebugMode description]
+     * @return {[type]} [description]
+     */
     function openRealtimeDebugMode() {
         log('============ 已开启无缓存模式 ============');
-        data.ver = +new Date;
+        seed.support = false;
         return seed;
     };
 
-
-
+    /**
+     * [scan description]
+     * @return {[type]} [description]
+     */
     function scan() {
         var files = doc.querySelectorAll('[data-seed]');
 
@@ -140,13 +151,21 @@
         return seed.use(ids);
     };
 
-
+    /**
+     * [parseAlias description]
+     * @param  {[type]} id [description]
+     * @return {[type]}    [description]
+     */
     function parseAlias(id) {
         var alias = data.alias;
         return alias && (getType(alias[id]) === 'string') ? alias[id] : id;
     };
 
-
+    /**
+     * [parseHook description]
+     * @param  {[type]} item [description]
+     * @return {[type]}      [description]
+     */
     function parseHook(item) {
 
         var map = data.map;
@@ -193,7 +212,11 @@
         return item;
     };
 
-
+    /**
+     * [parseIds description]
+     * @param  {[type]} ids [description]
+     * @return {[type]}     [description]
+     */
     function parseIds(ids) {
         var result = [];
         ids.forEach(function(item) {
@@ -249,7 +272,14 @@
     // }
 
 
+/**
+ * [executeCode description]
 
+ * @param  {[type]} codeString  [description]
+ * @param  {[type]} uid         [description]
+ * @param  {[type]} DOMposition [description]
+ * @return {[type]}             [description]
+ */
     function executeCode(codeString, uid, DOMposition) {
 
         if (DOMposition) {
@@ -277,7 +307,12 @@
         log('{fn:executeCode} --- ', '已执行：', uid);
     };
 
-
+/**
+ * [dock description]
+ * @param  {[type]} ids      [description]
+ * @param  {[type]} callBack [description]
+ * @return {[type]}          [description]
+ */
     function dock(ids, callBack) {
         var codeStringQueue = [];
         var fns = [];
@@ -366,7 +401,12 @@
         queue(fns);
     };
 
-
+/**
+ * [queue description]
+ * @param  {[type]} fns     [description]
+ * @param  {[type]} context [description]
+ * @return {[type]}         [description]
+ */
     function queue(fns, context) {
         (function next() {
             if (fns.length > 0) {
@@ -376,12 +416,19 @@
         })();
     };
 
-
+/**
+ * [getType description]
+ * @param  {[type]} object [description]
+ * @return {[type]}        [description]
+ */
     function getType(object) {
         return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
     };
 
-
+/**
+ * [isSupportLocalStorage description]
+ * @return {Boolean} [description]
+ */
     function isSupportLocalStorage() {
         var support = true;
         try {
@@ -394,7 +441,13 @@
         return support;
     };
 
-
+/**
+ * [getFile description]
+ * @param  {[type]} url     [description]
+ * @param  {[type]} success [description]
+ * @param  {[type]} error   [description]
+ * @return {[type]}         [description]
+ */
     function getFile(url, success, error) {
         log('{fn:getFile} --- ', '正在通过AJAX加载：', url);
         var xhr = new XMLHttpRequest();
@@ -414,13 +467,23 @@
         return xhr;
     };
 
-
+/**
+ * [getFileError description]
+ * @param  {[type]} error    [description]
+ * @param  {[type]} type     [description]
+ * @param  {[type]} xhr      [description]
+ * @param  {[type]} callBack [description]
+ * @return {[type]}          [description]
+ */
     function getFileError(error, type, xhr, callBack) {
         log('warn', '{fn:getFileError} --- ', '资源加载失败！', arguments);
         callBack && callBack(error, type, xhr);
     };
 
-
+/**
+ * [log description]
+ * @return {[type]} [description]
+ */
     function log( /* type [, arg1, arg2...etc. ]*/ ) {
         var args = Array.prototype.slice.call(arguments);
         var type = args[0];
