@@ -58,5 +58,24 @@
 
 ```
 
+- `Seed.scan`
+
+```html
+
+ <!-- =================== If Seedjs has been loaded in this page =================== -->
+
+ <style data-seed="path/to/file.css"></style>
+ <script>
+    Seed.scan();
+ </script>
+
+ <script data-seed="/path/to/file.js"></script>
+ <script>
+    Seed.scan();
+ </script>
+ 
+
+
+```
 
 
