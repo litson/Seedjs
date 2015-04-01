@@ -69,16 +69,19 @@
 
  <style data-seed="path/to/file.css"></style>
  <script>
-    Seed.scan();
+    Seed.scan(); // Then 'path/to/file.css' can be loaded preferred.
  </script>
 
  <script data-seed="/path/to/file.js"></script>
  <script>
-    Seed.scan();
+    Seed.scan(); // Then 'path/to/file.js' can be loaded preferred.
  </script>
  
 
 
 ```
+
+
+
 
 
