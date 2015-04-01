@@ -249,6 +249,7 @@
         return result;
     };
 
+
     /**
      * 对比过期时间
      * @param  {[type]} ms [description]
@@ -272,14 +273,13 @@
     // }
 
 
-/**
- * [executeCode description]
-
- * @param  {[type]} codeString  [description]
- * @param  {[type]} uid         [description]
- * @param  {[type]} DOMposition [description]
- * @return {[type]}             [description]
- */
+    /**
+     * [executeCode description]
+     * @param  {[type]} codeString  [description]
+     * @param  {[type]} uid         [description]
+     * @param  {[type]} DOMposition [description]
+     * @return {[type]}             [description]
+     */
     function executeCode(codeString, uid, DOMposition) {
 
         if (DOMposition) {
@@ -307,12 +307,12 @@
         log('{fn:executeCode} --- ', '已执行：', uid);
     };
 
-/**
- * [dock description]
- * @param  {[type]} ids      [description]
- * @param  {[type]} callBack [description]
- * @return {[type]}          [description]
- */
+    /**
+     * [dock description]
+     * @param  {[type]} ids      [description]
+     * @param  {[type]} callBack [description]
+     * @return {[type]}          [description]
+     */
     function dock(ids, callBack) {
         var codeStringQueue = [];
         var fns = [];
@@ -401,12 +401,12 @@
         queue(fns);
     };
 
-/**
- * [queue description]
- * @param  {[type]} fns     [description]
- * @param  {[type]} context [description]
- * @return {[type]}         [description]
- */
+    /**
+     * [queue description]
+     * @param  {[type]} fns     [description]
+     * @param  {[type]} context [description]
+     * @return {[type]}         [description]
+     */
     function queue(fns, context) {
         (function next() {
             if (fns.length > 0) {
@@ -416,19 +416,19 @@
         })();
     };
 
-/**
- * [getType description]
- * @param  {[type]} object [description]
- * @return {[type]}        [description]
- */
+    /**
+     * [getType description]
+     * @param  {[type]} object [description]
+     * @return {[type]}        [description]
+     */
     function getType(object) {
         return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
     };
 
-/**
- * [isSupportLocalStorage description]
- * @return {Boolean} [description]
- */
+    /**
+     * [isSupportLocalStorage description]
+     * @return {Boolean} [description]
+     */
     function isSupportLocalStorage() {
         var support = true;
         try {
@@ -441,13 +441,13 @@
         return support;
     };
 
-/**
- * [getFile description]
- * @param  {[type]} url     [description]
- * @param  {[type]} success [description]
- * @param  {[type]} error   [description]
- * @return {[type]}         [description]
- */
+    /**
+     * [getFile description]
+     * @param  {[type]} url     [description]
+     * @param  {[type]} success [description]
+     * @param  {[type]} error   [description]
+     * @return {[type]}         [description]
+     */
     function getFile(url, success, error) {
         log('{fn:getFile} --- ', '正在通过AJAX加载：', url);
         var xhr = new XMLHttpRequest();
@@ -467,23 +467,23 @@
         return xhr;
     };
 
-/**
- * [getFileError description]
- * @param  {[type]} error    [description]
- * @param  {[type]} type     [description]
- * @param  {[type]} xhr      [description]
- * @param  {[type]} callBack [description]
- * @return {[type]}          [description]
- */
+    /**
+     * [getFileError description]
+     * @param  {[type]} error    [description]
+     * @param  {[type]} type     [description]
+     * @param  {[type]} xhr      [description]
+     * @param  {[type]} callBack [description]
+     * @return {[type]}          [description]
+     */
     function getFileError(error, type, xhr, callBack) {
         log('warn', '{fn:getFileError} --- ', '资源加载失败！', arguments);
         callBack && callBack(error, type, xhr);
     };
 
-/**
- * [log description]
- * @return {[type]} [description]
- */
+    /**
+     * [log description]
+     * @return {[type]} [description]
+     */
     function log( /* type [, arg1, arg2...etc. ]*/ ) {
         var args = Array.prototype.slice.call(arguments);
         var type = args[0];
