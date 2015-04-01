@@ -84,7 +84,9 @@
 ## TEST
 
 Network: GPRS (50Kbps 500ms RTT)
+
 Number of resouce: 2
+
 Resouces size: about 20kb.
 
 <table>
