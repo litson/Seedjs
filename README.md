@@ -1,7 +1,10 @@
 # Seedjs
 
 ## TODO
-
+- JSONP support.
+- Combine in native.
+- CSS don't need to execute sequentially.
+- File position deal, top or bottom or somewhere.
 
 ## Features
 
