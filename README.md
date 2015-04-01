@@ -81,6 +81,13 @@
 
 ```
 
+## TEST
+
+|| Cache || localStorage || Time ||
+|| no || no || 0 ||
+|| yes || no || 0 ||
+|| no || yes || 0 ||
+|| yes || yes || 0 ||
 
 
 
