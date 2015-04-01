@@ -74,10 +74,7 @@
             }
         });
 
-        // 并发所有文件
-        // 闭包检测是否文件全部下载完成
-        // 全部完成后执行回调。
-
+        // 下载执行
         ids.length && dock(ids, function(codeStringQueue) {
             codeStringQueue.forEach(function(item) {
                 seed.cache[item.id] = !0;
@@ -294,7 +291,7 @@
             var node;
             var target;
             isCSS
-                ? (fileType = 'style', fileWayValue = 'text/css', target = doc.header) : (fileType = 'script', fileWayValue = 'text/javascript', target = doc.body);
+                ? (fileType = 'style', fileWayValue = 'text/css', target = doc.head) : (fileType = 'script', fileWayValue = 'text/javascript', target = doc.body);
             node = doc.createElement(fileType);
             node.id = uid;
             node.type = fileWayValue;
