@@ -83,6 +83,8 @@
 
 ## TEST
 
+Network: GPRS (50Kbps 500ms RTT)
+
 <table>
   <tr>
     <th> Cache </th>
