@@ -83,11 +83,33 @@
 
 ## TEST
 
-|| Cache || localStorage || Time ||
-|| no || no || 0 ||
-|| yes || no || 0 ||
-|| no || yes || 0 ||
-|| yes || yes || 0 ||
+<table>
+  <tr>
+    <th> Cache </th>
+    <th> localStorage </th>
+    <th> Time </th>
+  </tr>
+  <tr>
+    <td> no </td>
+    <td> no </td>
+    <td> 0 </td>
+  </tr>
+  <tr>
+    <td> yes </td>
+    <td> no </td>
+    <td> 0 </td>
+  </tr>
+  <tr>
+    <td> no </td>
+    <td> yes </td>
+    <td> 0 </td>
+  </tr>
+  <tr>
+    <td> yes </td>
+    <td> yes </td>
+    <td> 0 </td>
+  </tr>
+</table>
 
 
 
