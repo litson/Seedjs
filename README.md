@@ -30,12 +30,28 @@
 
 ```js
 
-// When all the file that your required be loaded, then the 'callBack' function can be used.
- function callBack(){
-    console.log(Zepto);
- }
+  // When all the file that your required be loaded, then the 'callBack' function can be used.
+   function callBack(){
+      console.log(Zepto);
+   }
 
-Seed.use(['zepto', 'angularjs', 'bootstrap', 'path/to/some/file.js' /* You can also setting some extra file. */], callBack);
+  Seed.use(
+      [
+        'zepto'
+        , 'angularjs'
+        , 'bootstrap'
+        /* You can also setting some extra file. */
+        , 'path/to/some/file.js' 
+      ]
+      , callBack
+  );
 
 ```
+
+- 'Seed.openRealtimeDebugMode'
+
+```js
+```
+
+
 
