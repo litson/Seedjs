@@ -4,6 +4,7 @@
 <head>
     <meta charset="GBK">
     <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <style data-seed='http://cdn.staticfile.org/normalize/3.0.1/normalize.css'></style>
     <title>Document</title>
 </head>
 
@@ -18,24 +19,46 @@
     <ul>
         <li v-repeat='item : alias'>{{item}}</li>
     </ul>
+    <h3>map:</h3>
+    <p>
+        {{map}}
+    </p>
+    <h3>expires:</h3>
+    <p>
+        {{expires}}
+    </p>
     <script src='seed.js'></script>
     <script>
+    var a = 0,
+        b = 0;
+
+    function A(a) {
+        A = function(b) {
+            console.log(a + b++);
+        }
+        console.log(a++);
+    }
+    A(1);
+    A(2);
+
+
+
+
     // 
 
     var data = {
         base: 'https://www.baifubao.com',
         alias: {
-            zepto: '/static/group/js/mobile/inline/zapto.js?ver=20150326',
+            zepto: '/static/group/js/mobile/inline/zapto.js?ver=20150327',
             vue: '/static/group/js/mobile/inline/vue.js',
             normalize: 'http://cdn.staticfile.org/normalize/3.0.1/normalize.css'
-        },
-        map: [/^(.*\.(?:css|js))(.*)$/i, "$1?20150326"] //,
-            // expires: 1427700190021 // +new Date
+        } // ,
+        // map:// 
     };
 
     Seed
         .config(data)
-        .openRealtimeDebugMode()
+        // .openRealtimeDebugMode()
         .use(['normalize', 'zepto', 'vue'], function() {
 
             var vm = new Vue({
