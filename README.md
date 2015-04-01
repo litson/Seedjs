@@ -26,7 +26,7 @@
 
 ```
 
-- 'Seed.use'
+- `Seed.use`
 
 ```js
 
@@ -48,9 +48,14 @@
 
 ```
 
-- 'Seed.openRealtimeDebugMode'
+- `Seed.openRealtimeDebugMode`
 
 ```js
+
+  // Don't use localStorge.
+  Seed.openRealtimeDebugMode();
+
+
 ```
 
 
