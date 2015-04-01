@@ -26,4 +26,16 @@
 
 ```
 
+- 'Seed.use'
+
+```js
+
+// When all the file that your required be loaded, then the 'callBack' function can be used.
+ function callBack(){
+    console.log(Zepto);
+ }
+
+Seed.use(['zepto', 'angularjs', 'bootstrap', 'path/to/some/file.js' /* You can also setting some extra file. */], callBack);
+
+```
 
