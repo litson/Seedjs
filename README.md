@@ -89,6 +89,8 @@ Number of resouce: 2
 
 Resouces size: about 20kb.
 
+No pictures.
+
 <table>
   <tr>
     <th> Cache </th>
@@ -98,22 +100,27 @@ Resouces size: about 20kb.
   <tr>
     <td> no </td>
     <td> no </td>
-    <td> 0 </td>
+    <td> 6550 </td>
   </tr>
   <tr>
     <td> yes </td>
     <td> no </td>
-    <td> 0 </td>
+    <td> 2798 </td>
   </tr>
   <tr>
     <td> no </td>
-    <td> yes </td>
-    <td> 0 </td>
+    <td> yes (No cache and first load, need seeding into localStorage) </td>
+    <td> 7010 </td>
   </tr>
   <tr>
     <td> yes </td>
+    <td> yes (Using cache and first load, need seeding into localStorage) </td>
+    <td> 2345 </td>
+  </tr>
+  <tr>
     <td> yes </td>
-    <td> 0 </td>
+    <td> yes (Resouces has beed seed, cache neither need) </td>
+    <td> 935 </td>
   </tr>
 </table>
 
