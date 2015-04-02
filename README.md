@@ -85,13 +85,10 @@ JavaScript library for seeding static files into localStorge.
 
 ## TEST
 
-Network: GPRS (50Kbps 500ms RTT)
-
-Number of resouce: 2
-
-Resouces size: about 20kb.
-
-No pictures.
+- Network: GPRS (50Kbps 500ms RTT)
+- Number of resouce: 2
+- Resouces size: about 20kb.
+- No pictures.
 
 <table>
   <tr>
@@ -111,7 +108,7 @@ No pictures.
   </tr>
   <tr>
     <td> no </td>
-    <td> yes (No cache and first load, need seeding into localStorage) </td>
+    <td> yes (No cache and first loading, need seeding into localStorage) </td>
     <td> 7010 </td>
   </tr>
   <tr>
@@ -121,7 +118,7 @@ No pictures.
   </tr>
   <tr>
     <td> yes </td>
-    <td> yes (Resouces has beed seed, cache neither need)</td>
+    <td> yes (Resouces has beed seeded, cache neither need)</td>
     <td> 935 </td>
   </tr>
 </table>
