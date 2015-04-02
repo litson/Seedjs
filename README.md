@@ -121,8 +121,8 @@ No pictures.
   </tr>
   <tr>
     <td> yes </td>
-    <td> yes (Resouces has beed seed, cache neither need) </td>
-    <td> 935 </td>
+    <td> yes _Resouces has beed seed, cache neither need_</td>
+    <td> 935 *single asterisks* </td>
   </tr>
 </table>
 
