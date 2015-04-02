@@ -232,12 +232,13 @@
                 id: item.trim()
             }
             var id = temp.id;
+            var relative;
 
             temp.position = doc.querySelector('[data-seed="' + id + '"]');
 
             if (!ABSOLUTE_RE.test(id)) {
                 // 如果非绝对路径，则先在别名中查找
-                var relative = parseAlias(id);
+                relative = parseAlias(id);
                 // 如果别名中已存在该路径，则使用
                 id = relative || id;
                 // 再做一次绝对路径的检测，因为允许在alias中配置其他‘绝对路径的文件’；
@@ -248,38 +249,9 @@
             temp = parseHook(temp);
             temp && result.push(temp);
 
-            // if (!isUrl(temp.id)) {
-            //     log('warn', '{fn:parseIds} --- ', temp.id, '不是一个有效的url');
-            // } else {
-            // }
-
         });
         return result;
     };
-
-
-    /**
-     * 对比过期时间
-     * @param  {[type]} ms [description]
-     * @return {[type]}    是否过期，未过期false，已过期true
-     */
-    // function hasExpired(ms) {
-    //     var expire = data.expires;
-    //     // 如果用户未设置更新时间
-    //     if (!expire) {
-    //         return false;
-    //     }
-    //     expire = (getType(expire) === 'date') ? expire : new Date(expire);
-
-    //     // 判断是不是invlid date,列举了3中方法。。
-    //     // expire = (expire.getDate().toString() === 'NaN') ? 0 : (+expire);
-    //     expire = (Date.prototype.toString.call(expire) === 'Invalid Date') ? 0 : (+expire);
-    //     // expire = (expire.valueOf().toString() === 'NaN') ? 0 : (+expire);
-
-    //     // 用户设置了过期时间，则对比是否已过期
-    //     return ms < data.expires;
-    // }
-
 
     /**
      * [executeCode description]
@@ -290,28 +262,28 @@
      */
     function executeCode(codeString, uid, DOMposition) {
 
-        if (DOMposition) {
-            DOMposition.appendChild(doc.createTextNode(codeString));
-            DOMposition.id = uid;
-            DOMposition.removeAttribute('data-seed');
-        } else {
-            var isCSS = IS_CSS_RE.test(uid);
-            var fileType;
-            // var fileWayType;
-            var fileWayValue;
-            var node;
-            var target;
+        var isCSS;
+        var fileType;
+        var fileWayValue;
+        var target;
+
+        var node = DOMposition;
+
+        if (!node) {
+            isCSS = IS_CSS_RE.test(uid);
+
             isCSS
                 ? (fileType = 'style', fileWayValue = 'text/css', target = doc.head) : (fileType = 'script', fileWayValue = 'text/javascript', target = doc.body);
+
             node = doc.createElement(fileType);
-            node.id = uid;
             node.type = fileWayValue;
             target.appendChild(node);
-            // node.innerHTML = codeString;
-            // innerHTML再js文件超过大概5000行的时候会出输入超限异常。
-            node.appendChild(doc.createTextNode(codeString));
+        } else {
+            node.removeAttribute('data-seed');
         }
 
+        node.id = uid;
+        node.appendChild(doc.createTextNode(codeString));
         log('{fn:executeCode} --- ', '已执行：', uid);
     };
 
@@ -356,32 +328,10 @@
             }
         };
 
-        var needLoadData = (function() {
-            // 如果不支持localstorge
-            if (!seed.support) {
-                return true;
-            }
-
-            // 判断是否过期
-            // 获取本地文件的最后修改时间，如果没有则为0；
-            // var expire = ls.getItem('__seed_expire__');
-            // expire = expire ? expire : 0;
-            // log(hasExpired(expire), expire);
-
-            // // 如果已过期，则不能从本地取
-            // if (hasExpired(expire)) {
-            //     // 重新设置过期时间
-            //     ls.setItem('__seed_expire__', data.expires);
-            //     return true;
-            // }
-
-            return false;
-        })();
-
         // 打包成一个函数队列
         ids.forEach(function(item) {
 
-            var condition = needLoadData || (function(item) {
+            var condition = (function(item) {
                 // 不支持LS采用
                 if (!seed.support) {
                     return true;
@@ -432,18 +382,6 @@
     function getType(object) {
         return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
     };
-
-
-    /**
-     * [isUrl description]
-     * @param  {[type]}  url [description]
-     * @return {Boolean}     [description]
-     */
-    function isUrl(url) {
-        var regexp =
-            /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-        return regexp.test(url);
-    }
 
     /**
      * [isSupportLocalStorage description]
