@@ -76,7 +76,7 @@ JavaScript library for seeding static files into localStorge.
 
  <script data-seed="/path/to/file.js"></script>
  <script>
-    // Then 'path/to/file.js' can be preferred loaded.Another one 'path/to/file.css' will not be used twitce.
+    // Then 'path/to/file.js' can be preferred loaded.Another one 'path/to/file.css' will not be used twice.
     Seed.scan(); 
  </script>
  
@@ -121,8 +121,8 @@ No pictures.
   </tr>
   <tr>
     <td> yes </td>
-    <td> yes _Resouces has beed seed, cache neither need_</td>
-    <td> 935 *single asterisks* </td>
+    <td> yes (Resouces has beed seed, cache neither need)</td>
+    <td> 935 </td>
   </tr>
 </table>
 
