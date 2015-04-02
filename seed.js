@@ -189,8 +189,11 @@
 
         // 当映射规则出现故障时，可能会得不到预期的结果
         if (getType(splited) !== 'array') {
-            log('warn', '{fn:parseHook} --- ', '\n解析映射规则失败 by\n', map, '\n', originalId, '\n', '使用默认规则');
-            splited = originalId.match(PARAM_RE);
+            log('warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过');
+            // splited = originalId.match(PARAM_RE);
+            // 有的时候会解析出错，返回null,此时直接跳出
+            return null;
+            // splited = splited || [undefined, originalId, originalId];
         }
 
         id = splited[1];
@@ -228,20 +231,28 @@
             var temp = {
                 id: item.trim()
             }
+            var id = temp.id;
 
-            temp.position = doc.querySelector('[data-seed="' + temp.id + '"]');
+            temp.position = doc.querySelector('[data-seed="' + id + '"]');
 
-            if (!ABSOLUTE_RE.test(temp.id)) {
+            if (!ABSOLUTE_RE.test(id)) {
                 // 如果非绝对路径，则先在别名中查找
-                var relative = parseAlias(temp.id);
+                var relative = parseAlias(id);
                 // 如果别名中已存在该路径，则使用
-                temp.id = relative ? relative : temp.id;
+                id = relative || id;
                 // 再做一次绝对路径的检测，因为允许在alias中配置其他‘绝对路径的文件’；
-                temp.id = (ABSOLUTE_RE.test(temp.id) ? temp.id : data.base + temp.id);
-                // TODO:匹配映射，去掉版本号什么的。
-                temp = parseHook(temp);
+                temp.id = (ABSOLUTE_RE.test(id) ? id : data.base + id);
             }
-            result.push(temp);
+
+            // parseHook的时候如果出异常，直接跳过
+            temp = parseHook(temp);
+            temp && result.push(temp);
+
+            // if (!isUrl(temp.id)) {
+            //     log('warn', '{fn:parseIds} --- ', temp.id, '不是一个有效的url');
+            // } else {
+            // }
+
         });
         return result;
     };
@@ -421,6 +432,18 @@
     function getType(object) {
         return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
     };
+
+
+    /**
+     * [isUrl description]
+     * @param  {[type]}  url [description]
+     * @return {Boolean}     [description]
+     */
+    function isUrl(url) {
+        var regexp =
+            /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+        return regexp.test(url);
+    }
 
     /**
      * [isSupportLocalStorage description]
