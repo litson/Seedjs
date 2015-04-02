@@ -6,17 +6,17 @@
  *     3.本地combo文件
  *     4.CSS文件并发下载
  *     4.所有文件改为并发下载，但执行是按序，并做本地合并
- *     5.expires 可否 改为 version方式
  *     6.deal buttom top
  *
  */
-! function __seed_package__(root, undefined) {
+!function __seed_package__(root) {
 
     if (root.Seed) {
         return;
     }
 
-    var noop = function() {};
+    var noop = function () {
+    };
 
     var ls = root.localStorage;
     var doc = document;
@@ -24,7 +24,6 @@
     var ABSOLUTE_RE = /^\/\/.|:\//;
     var IS_CSS_RE = /\.css(?:\?|$)/i;
     var PARAM_RE = /^(.*\.(?:css|js))(.*)$/i;
-
 
     var seed = root.Seed = {
         // getFile: getFile,
@@ -43,22 +42,15 @@
 
     data.base = location.origin;
 
-    /**
-     * [use description]
-     * @param  {[type]} ids      [description]
-     * @param  {[type]} callBack [description]
-     * @return {[type]}          [description]
-     */
     function use(ids, callBack) {
-        var ids = ids;
         if (!Array.isArray(ids)) {
             if (getType(ids) === 'string') {
                 ids = [ids];
             } else {
                 log('warn', '{fn:Seed.use} --- ', '[类型错误]请提供一个文件名或者文件名数组！');
-                return false;
+                return seed;
             }
-        };
+        }
 
         log('{fn:Seed.use} --- ', '原始数据：', ids);
 
@@ -66,7 +58,7 @@
 
         log('{fn:Seed.use} --- ', '路由寻找到：', ids);
 
-        ids = ids.filter(function(item) {
+        ids = ids.filter(function (item) {
             if (!seed.cache[item.id]) {
                 return item;
             } else {
@@ -75,8 +67,8 @@
         });
 
         // 下载执行
-        ids.length && dock(ids, function(codeStringQueue) {
-            codeStringQueue.forEach(function(item) {
+        ids.length && dock(ids, function (codeStringQueue) {
+            codeStringQueue.forEach(function (item) {
                 seed.cache[item.id] = !0;
                 executeCode(item.data, item.id, item.position);
             });
@@ -84,13 +76,8 @@
         });
 
         return seed;
-    };
+    }
 
-    /**
-     * [config description]
-     * @param  {[type]} setting [description]
-     * @return {[type]}         [description]
-     */
     function config(setting) {
         var key;
         var k;
@@ -109,22 +96,14 @@
             }
         }
         return seed;
-    };
+    }
 
-    /**
-     * [openRealtimeDebugMode description]
-     * @return {[type]} [description]
-     */
     function openRealtimeDebugMode() {
         log('============ 已开启无缓存模式 ============');
         seed.support = false;
         return seed;
-    };
+    }
 
-    /**
-     * [scan description]
-     * @return {[type]} [description]
-     */
     function scan() {
         var files = doc.querySelectorAll('[data-seed]');
 
@@ -146,25 +125,14 @@
         log('{fn:Seed.scan} --- ', '获取到的种子：', ids);
 
         return seed.use(ids);
-    };
+    }
 
-    /**
-     * [parseAlias description]
-     * @param  {[type]} id [description]
-     * @return {[type]}    [description]
-     */
     function parseAlias(id) {
         var alias = data.alias;
         return alias && (getType(alias[id]) === 'string') ? alias[id] : id;
-    };
+    }
 
-    /**
-     * [parseHook description]
-     * @param  {[type]} item [description]
-     * @return {[type]}      [description]
-     */
     function parseHook(item) {
-
         var map = data.map;
 
         var splited;
@@ -176,11 +144,9 @@
 
         // 如果映射规则是函数
         if (mapType === 'function') {
-
             splited = map(originalId);
             // 如果映射规则是正则
         } else if (mapType === 'regexp') {
-
             splited = originalId.match(map);
             // 如果是错误的映射规则
         } else {
@@ -190,10 +156,8 @@
         // 当映射规则出现故障时，可能会得不到预期的结果
         if (getType(splited) !== 'array') {
             log('warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过');
-            // splited = originalId.match(PARAM_RE);
             // 有的时候会解析出错，返回null,此时直接跳出
             return null;
-            // splited = splited || [undefined, originalId, originalId];
         }
 
         id = splited[1];
@@ -210,16 +174,11 @@
         item.id = id;
         item.hook = hook;
         return item;
-    };
+    }
 
-    /**
-     * [parseIds description]
-     * @param  {[type]} ids [description]
-     * @return {[type]}     [description]
-     */
     function parseIds(ids) {
         var result = [];
-        ids.forEach(function(item) {
+        ids.forEach(function (item) {
 
             /**
              * 104 === h ( http, https )
@@ -251,15 +210,8 @@
 
         });
         return result;
-    };
+    }
 
-    /**
-     * [executeCode description]
-     * @param  {[type]} codeString  [description]
-     * @param  {[type]} uid         [description]
-     * @param  {[type]} DOMposition [description]
-     * @return {[type]}             [description]
-     */
     function executeCode(codeString, uid, DOMposition) {
 
         var isCSS;
@@ -285,22 +237,16 @@
         node.id = uid;
         node.appendChild(doc.createTextNode(codeString));
         log('{fn:executeCode} --- ', '已执行：', uid);
-    };
+    }
 
-    /**
-     * [dock description]
-     * @param  {[type]} ids      [description]
-     * @param  {[type]} callBack [description]
-     * @return {[type]}          [description]
-     */
     function dock(ids, callBack) {
         var codeStringQueue = [];
         var fns = [];
 
         // 远程拉数据方法
-        var fnWrapperFromRemote = function(item) {
-            return function(next) {
-                getFile(item.id, function(codeString) {
+        var fnWrapperFromRemote = function (item) {
+            return function (next) {
+                getFile(item.id, function (codeString) {
                     codeStringQueue.push({
                         data: codeString,
                         id: item.id,
@@ -310,15 +256,15 @@
                     seed.support && (ls.setItem(item.id, codeString), ls.setItem(item.id + '@hook', item.hook));
 
                     next();
-                }, function() {
+                }, function () {
                     next();
                 });
             }
-        };
+        }
 
         // 本地查找
-        var fnWrapperFromLocal = function(item) {
-            return function(next) {
+        var fnWrapperFromLocal = function (item) {
+            return function (next) {
                 codeStringQueue.push({
                     data: ls.getItem(item.id),
                     id: item.id,
@@ -329,9 +275,9 @@
         };
 
         // 打包成一个函数队列
-        ids.forEach(function(item) {
+        ids.forEach(function (item) {
 
-            var condition = (function(item) {
+            var condition = (function (item) {
                 // 不支持LS采用
                 if (!seed.support) {
                     return true;
@@ -351,20 +297,14 @@
         });
 
         // 函数队列追加一个函数，待完成后执行回调
-        fns.push(function() {
+        fns.push(function () {
             callBack && callBack(codeStringQueue);
         });
 
         // 执行函数队列
         queue(fns);
-    };
+    }
 
-    /**
-     * [queue description]
-     * @param  {[type]} fns     [description]
-     * @param  {[type]} context [description]
-     * @return {[type]}         [description]
-     */
     function queue(fns, context) {
         (function next() {
             if (fns.length > 0) {
@@ -372,21 +312,12 @@
                 fn.apply(context, [next].concat(Array.prototype.slice.call(arguments, 0)));
             }
         })();
-    };
+    }
 
-    /**
-     * [getType description]
-     * @param  {[type]} object [description]
-     * @return {[type]}        [description]
-     */
     function getType(object) {
         return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
-    };
+    }
 
-    /**
-     * [isSupportLocalStorage description]
-     * @return {Boolean} [description]
-     */
     function isSupportLocalStorage() {
         var support = true;
         try {
@@ -397,20 +328,13 @@
         }
         // log('{fn:isSupportLocalStorage} --- ', (support ? '' : '不'), 'localStorage');
         return support;
-    };
+    }
 
-    /**
-     * [getFile description]
-     * @param  {[type]} url     [description]
-     * @param  {[type]} success [description]
-     * @param  {[type]} error   [description]
-     * @return {[type]}         [description]
-     */
     function getFile(url, success, error) {
         log('{fn:getFile} --- ', '正在通过AJAX加载：', url);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 xhr.onreadystatechange = noop;
                 if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
@@ -423,32 +347,19 @@
         }
         xhr.send(null);
         return xhr;
-    };
+    }
 
-    /**
-     * [getFileError description]
-     * @param  {[type]} error    [description]
-     * @param  {[type]} type     [description]
-     * @param  {[type]} xhr      [description]
-     * @param  {[type]} callBack [description]
-     * @return {[type]}          [description]
-     */
     function getFileError(error, type, xhr, callBack) {
         log('warn', '{fn:getFileError} --- ', '资源加载失败！', arguments);
         callBack && callBack(error, type, xhr);
-    };
+    }
 
-    /**
-     * [log description]
-     * @return {[type]} [description]
-     */
-    function log( /* type [, arg1, arg2...etc. ]*/ ) {
+    function log(/* type [, arg1, arg2...etc. ]*/) {
         var args = Array.prototype.slice.call(arguments);
         var type = args[0];
         var isSpecified = !!~['dir', 'warn', 'info', 'error', 'group', 'groupEnd'].indexOf(type);
         args = isSpecified ? (args.shift(), args) : args;
         args.unshift('[Debug:] === ');
         return data.debug && console[isSpecified ? type : 'log'].apply(console, args);
-    };
-
+    }
 }(window);
