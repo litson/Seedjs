@@ -1,5 +1,7 @@
 # Seedjs
 
+JavaScript library for seeding static files into localStorge.
+
 ## TODO
 - JSONP support.
 - Combine in native.
@@ -74,13 +76,55 @@
 
  <script data-seed="/path/to/file.js"></script>
  <script>
-    Seed.scan(); // Then 'path/to/file.js' can be preferred loaded.
+    // Then 'path/to/file.js' can be preferred loaded.Another one 'path/to/file.css' will not be used twitce.
+    Seed.scan(); 
  </script>
  
 
-
 ```
 
+## TEST
+
+Network: GPRS (50Kbps 500ms RTT)
+
+Number of resouce: 2
+
+Resouces size: about 20kb.
+
+No pictures.
+
+<table>
+  <tr>
+    <th> Cache </th>
+    <th> localStorage </th>
+    <th> Time </th>
+  </tr>
+  <tr>
+    <td> no </td>
+    <td> no </td>
+    <td> 6550 </td>
+  </tr>
+  <tr>
+    <td> yes </td>
+    <td> no </td>
+    <td> 2798 </td>
+  </tr>
+  <tr>
+    <td> no </td>
+    <td> yes (No cache and first load, need seeding into localStorage) </td>
+    <td> 7010 </td>
+  </tr>
+  <tr>
+    <td> yes </td>
+    <td> yes (Using cache and first load, need seeding into localStorage) </td>
+    <td> 2345 </td>
+  </tr>
+  <tr>
+    <td> yes </td>
+    <td> yes (Resouces has beed seed, cache neither need) </td>
+    <td> 935 </td>
+  </tr>
+</table>
 
 
 
