@@ -42,7 +42,15 @@
 
     data.base = location.origin;
 
+    /**
+     *
+     * @param ids
+     * @param callBack
+     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     */
     function use(ids, callBack) {
+        var cssIds = [];
+        var jsIds = [];
         if (!Array.isArray(ids)) {
             if (getType(ids) === 'string') {
                 ids = [ids];
@@ -51,13 +59,11 @@
                 return seed;
             }
         }
-
         log('{fn:Seed.use} --- ', '原始数据：', ids);
-
         ids = parseIds(ids);
-
         log('{fn:Seed.use} --- ', '路由寻找到：', ids);
 
+        // 虑掉已经下载的文件
         ids = ids.filter(function (item) {
             if (!seed.cache[item.id]) {
                 return item;
@@ -65,19 +71,31 @@
                 log('warn', '{fn:Seed.use} --- ', item.id, '已被下载！');
             }
         });
+        // 拆分出css和js
+        ids.forEach(function (item) {
+            if (item.type === 'css') {
+                cssIds.push(item);
+            } else {
+                jsIds.push(item);
+            }
+        });
 
-        // 下载执行
+        // 下载执行js
         ids.length && dock(ids, function (codeStringQueue) {
             codeStringQueue.forEach(function (item) {
                 seed.cache[item.id] = !0;
-                executeCode(item.data, item.id, item.position);
+                executeCode(item);
             });
             callBack && callBack();
         });
-
         return seed;
     }
 
+    /**
+     *
+     * @param setting
+     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     */
     function config(setting) {
         var key;
         var k;
@@ -98,16 +116,24 @@
         return seed;
     }
 
+    /**
+     *
+     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     */
     function openRealtimeDebugMode() {
         log('============ 已开启无缓存模式 ============');
         seed.support = false;
         return seed;
     }
 
+    /**
+     *
+     * @returns {*}
+     */
     function scan() {
         var files = doc.querySelectorAll('[data-seed]');
-
         var len = files.length;
+
         if (!len) {
             return seed;
         }
@@ -119,51 +145,58 @@
         for (; i < len; i++) {
             temp = files[i];
             ids.push(temp.dataset.seed);
-            // temp.parentNode.removeChild(temp);
         }
-
         log('{fn:Seed.scan} --- ', '获取到的种子：', ids);
-
         return seed.use(ids);
     }
 
+    /**
+     *
+     * @param id
+     * @returns {*}
+     */
     function parseAlias(id) {
         var alias = data.alias;
         return alias && (getType(alias[id]) === 'string') ? alias[id] : id;
     }
 
+    /**
+     *
+     * @param item
+     * @returns {*}
+     */
     function parseHook(item) {
         var map = data.map;
+        var mapType = getType(map);
+
+        var hook = '__seed_version__';
+        var originalId = item.id;
 
         var splited;
         var id;
 
-        var hook = '__seed_version__';
-        var mapType = getType(map);
-        var originalId = item.id;
-
         // 如果映射规则是函数
         if (mapType === 'function') {
             splited = map(originalId);
-            // 如果映射规则是正则
         } else if (mapType === 'regexp') {
+            // 如果映射规则是正则
             splited = originalId.match(map);
-            // 如果是错误的映射规则
         } else {
+            // 如果是错误的映射规则
             splited = originalId.match(PARAM_RE);
         }
 
         // 当映射规则出现故障时，可能会得不到预期的结果
+        // 此时直接跳出
         if (getType(splited) !== 'array') {
             log('warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过');
-            // 有的时候会解析出错，返回null,此时直接跳出
             return null;
         }
 
         id = splited[1];
 
         if (data.ver) {
-            hook = data.ver
+            hook = data.ver;
         } else {
             // 若解析后，id未发生变化，则使用默认的hook规则
             if (id !== originalId) {
@@ -176,135 +209,128 @@
         return item;
     }
 
+    /**
+     *
+     * @param ids
+     * @returns {Array}
+     */
     function parseIds(ids) {
         var result = [];
         ids.forEach(function (item) {
-
-            /**
-             * 104 === h ( http, https )
-             * 46  === . ( ./ )
-             * 47  === / ( / )
-             */
-            // var charCode = item.charCodeAt(0);
-
             var temp = {
                 id: item.trim()
-            }
+            };
             var id = temp.id;
             var relative;
-
             temp.position = doc.querySelector('[data-seed="' + id + '"]');
 
+            // 查找绝对路径
             if (!ABSOLUTE_RE.test(id)) {
                 // 如果非绝对路径，则先在别名中查找
                 relative = parseAlias(id);
                 // 如果别名中已存在该路径，则使用
                 id = relative || id;
                 // 再做一次绝对路径的检测，因为允许在alias中配置其他‘绝对路径的文件’；
-                temp.id = (ABSOLUTE_RE.test(id) ? id : data.base + id);
+                id = (ABSOLUTE_RE.test(id) ? id : data.base + id);
+                temp.id = id;
             }
 
+            temp.type = IS_CSS_RE.test(id) ? 'css' : 'js';
             // parseHook的时候如果出异常，直接跳过
             temp = parseHook(temp);
             temp && result.push(temp);
-
         });
         return result;
     }
 
-    function executeCode(codeString, uid, DOMposition) {
-
+    /**
+     *
+     * @param options
+     */
+    function executeCode(options) {
         var isCSS;
-        var fileType;
-        var fileWayValue;
+        var tagName;
+        var type;
         var target;
-
-        var node = DOMposition;
-
+        var node = options.position;
         if (!node) {
-            isCSS = IS_CSS_RE.test(uid);
-
+            isCSS = options.type === 'css';
             isCSS
-                ? (fileType = 'style', fileWayValue = 'text/css', target = doc.head) : (fileType = 'script', fileWayValue = 'text/javascript', target = doc.body);
-
-            node = doc.createElement(fileType);
-            node.type = fileWayValue;
+                ? (tagName = 'style', type = 'text/css', target = doc.head)
+                : (tagName = 'script', type = 'text/javascript', target = doc.body);
+            node = doc.createElement(tagName);
+            node.type = type;
             target.appendChild(node);
         } else {
             node.removeAttribute('data-seed');
         }
-
-        node.id = uid;
-        node.appendChild(doc.createTextNode(codeString));
-        log('{fn:executeCode} --- ', '已执行：', uid);
+        node.id = options.id;
+        node.appendChild(doc.createTextNode(options.data));
+        log('{fn:executeCode} --- ', '已执行：', options.id);
     }
 
+    /**
+     *
+     * @param ids
+     * @param callBack
+     */
     function dock(ids, callBack) {
         var codeStringQueue = [];
         var fns = [];
-
         // 远程拉数据方法
         var fnWrapperFromRemote = function (item) {
             return function (next) {
                 getFile(item.id, function (codeString) {
-                    codeStringQueue.push({
-                        data: codeString,
-                        id: item.id,
-                        position: item.position
-                    });
-
+                    item.data = codeString;
+                    item.type !== 'css' && codeStringQueue.push(item);
                     seed.support && (ls.setItem(item.id, codeString), ls.setItem(item.id + '@hook', item.hook));
-
-                    next();
+                    next(item);
                 }, function () {
-                    next();
+                    next(null);
                 });
             }
-        }
-
+        };
         // 本地查找
         var fnWrapperFromLocal = function (item) {
             return function (next) {
-                codeStringQueue.push({
-                    data: ls.getItem(item.id),
-                    id: item.id,
-                    position: item.position
-                });
-                next();
+                item.data = ls.getItem(item.id);
+                item.type !== 'css' && codeStringQueue.push(item);
+                next(item);
             }
         };
-
         // 打包成一个函数队列
         ids.forEach(function (item) {
+            var needRemote =
+                (!seed.support)
+                || (!ls.getItem(item.id) || (ls.getItem(item.id + '@hook') !== item.hook));
 
-            var condition = (function (item) {
-                // 不支持LS采用
-                if (!seed.support) {
-                    return true;
-                }
-                // 支持ls，但是本地中没有该item，或存在该item，但是版本号已经更新
-                if (!ls.getItem(item.id) || (ls.getItem(item.id + '@hook') !== item.hook)) {
-                    return true;
-                }
-                return false;
-            })(item);
+            log('{fn:dock} --- ', (needRemote ? '' : '不') + '需要下载：', item.id);
 
-            log('{fn:dock} --- ', (condition ? '' : '不') + '需要下载：', item.id);
+            var fn = needRemote
+                ? fnWrapperFromRemote(item)
+                : fnWrapperFromLocal(item);
 
-            fns.push(
-                condition ? fnWrapperFromRemote(item) : fnWrapperFromLocal(item)
-            );
+            if (item.type === 'css') {
+                fn(function (item) {
+                    item && executeCode(item);
+                });
+            } else {
+                fns.push(fn);
+            }
         });
-
         // 函数队列追加一个函数，待完成后执行回调
         fns.push(function () {
             callBack && callBack(codeStringQueue);
         });
-
         // 执行函数队列
         queue(fns);
     }
 
+    /**
+     *
+     * @param fns
+     * @param context
+     */
     function queue(fns, context) {
         (function next() {
             if (fns.length > 0) {
@@ -314,10 +340,19 @@
         })();
     }
 
+    /**
+     *
+     * @param object
+     * @returns {string}
+     */
     function getType(object) {
-        return Object.prototype.toString.call(object).replace(/\[\object|\]|\s/gi, '').toLowerCase();
+        return Object.prototype.toString.call(object).replace(/\[\object|]|\s/gi, '').toLowerCase();
     }
 
+    /**
+     *
+     * @returns {boolean}
+     */
     function isSupportLocalStorage() {
         var support = true;
         try {
@@ -330,6 +365,13 @@
         return support;
     }
 
+    /**
+     *
+     * @param url
+     * @param success
+     * @param error
+     * @returns {XMLHttpRequest}
+     */
     function getFile(url, success, error) {
         log('{fn:getFile} --- ', '正在通过AJAX加载：', url);
         var xhr = new XMLHttpRequest();
@@ -344,16 +386,27 @@
                     getFileError(xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, error);
                 }
             }
-        }
+        };
         xhr.send(null);
         return xhr;
     }
 
+    /**
+     *
+     * @param error
+     * @param type
+     * @param xhr
+     * @param callBack
+     */
     function getFileError(error, type, xhr, callBack) {
         log('warn', '{fn:getFileError} --- ', '资源加载失败！', arguments);
         callBack && callBack(error, type, xhr);
     }
 
+    /**
+     *
+     * @returns {boolean|root.Seed.data.debug|*}
+     */
     function log(/* type [, arg1, arg2...etc. ]*/) {
         var args = Array.prototype.slice.call(arguments);
         var type = args[0];
