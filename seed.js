@@ -49,8 +49,7 @@
      * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
      */
     function use(ids, callBack) {
-        var cssIds = [];
-        var jsIds = [];
+
         if (!Array.isArray(ids)) {
             if (getType(ids) === 'string') {
                 ids = [ids];
@@ -69,14 +68,6 @@
                 return item;
             } else {
                 log('warn', '{fn:Seed.use} --- ', item.id, '已被下载！');
-            }
-        });
-        // 拆分出css和js
-        ids.forEach(function (item) {
-            if (item.type === 'css') {
-                cssIds.push(item);
-            } else {
-                jsIds.push(item);
             }
         });
 
