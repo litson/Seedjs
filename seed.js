@@ -25,9 +25,21 @@
     var IS_CSS_RE = /\.css(?:\?|$)/i;
     var PARAM_RE = /^(.*\.(?:css|js))(.*)$/i;
 
-    var seed = root.Seed = {
-        // getFile: getFile,
+    var localDataWorker = {
         support: isSupportLocalStorage(),
+        setItem: function (key, value) {
+            if (this.support) {
+                ls.setItem(key, value);
+            }
+            return this;
+        },
+        getItem: function (key) {
+            return this.support ? ls.getItem(key) : null;
+        }
+    };
+
+    var seed = root.Seed = {
+        support: localDataWorker.support,
         use: use,
         config: config,
         openRealtimeDebugMode: openRealtimeDebugMode,
@@ -46,7 +58,7 @@
      *
      * @param ids
      * @param callBack
-     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     * @returns {Object} Seed
      */
     function use(ids, callBack) {
 
@@ -83,9 +95,9 @@
     }
 
     /**
-     *
-     * @param setting
-     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     * 配置接口
+     * @param   {Object} setting
+     * @returns {Object} Seed
      */
     function config(setting) {
         var key;
@@ -108,8 +120,8 @@
     }
 
     /**
-     *
-     * @returns {{support: *, use: use, config: config, openRealtimeDebugMode: openRealtimeDebugMode, scan: scan, cache: {}, version: string}}
+     * 启动是是获取资源
+     * @returns {Object} Seed
      */
     function openRealtimeDebugMode() {
         log('============ 已开启无缓存模式 ============');
@@ -274,7 +286,11 @@
                 getFile(item.id, function (codeString) {
                     item.data = codeString;
                     item.type !== 'css' && codeStringQueue.push(item);
-                    seed.support && (ls.setItem(item.id, codeString), ls.setItem(item.id + '@hook', item.hook));
+
+                    localDataWorker
+                        .setItem(item.id, codeString)
+                        .setItem(item.id + '@hook', item.hook);
+
                     next(item);
                 }, function () {
                     next(null);
@@ -284,7 +300,7 @@
         // 本地查找
         var fnWrapperFromLocal = function (item) {
             return function (next) {
-                item.data = ls.getItem(item.id);
+                item.data = localDataWorker.getItem(item.id);
                 item.type !== 'css' && codeStringQueue.push(item);
                 next(item);
             }
@@ -293,7 +309,8 @@
         ids.forEach(function (item) {
             var needRemote =
                 (!seed.support)
-                || (!ls.getItem(item.id) || (ls.getItem(item.id + '@hook') !== item.hook));
+                || (!localDataWorker.getItem(item.id)
+                || (localDataWorker.getItem(item.id + '@hook') !== item.hook));
 
             log('{fn:dock} --- ', (needRemote ? '' : '不') + '需要下载：', item.id);
 
