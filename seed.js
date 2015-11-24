@@ -9,43 +9,42 @@
  *     6.deal buttom top
  *
  */
-!function __seed_package__(root) {
+!function __seed_package__( root ) {
 
-    if (root.Seed) {
+    if ( root.Seed ) {
         return;
     }
 
     var noop = function () {
     };
 
-    var ls = root.localStorage;
-    var doc = document;
-
+    var ls          = root.localStorage;
+    var doc         = document;
     var ABSOLUTE_RE = /^\/\/.|:\//;
-    var IS_CSS_RE = /\.css(?:\?|$)/i;
-    var PARAM_RE = /^(.*\.(?:css|js))(.*)$/i;
+    var IS_CSS_RE   = /\.css(?:\?|$)/i;
+    var PARAM_RE    = /^(.*\.(?:css|js))(.*)$/i;
 
     var localDataWorker = {
         support: isSupportLocalStorage(),
-        setItem: function (key, value) {
-            if (this.support) {
-                ls.setItem(key, value);
+        setItem: function ( key, value ) {
+            if ( this.support ) {
+                ls.setItem( key, value );
             }
             return this;
         },
-        getItem: function (key) {
-            return this.support ? ls.getItem(key) : null;
+        getItem: function ( key ) {
+            return this.support ? ls.getItem( key ) : null;
         }
     };
 
     var seed = root.Seed = {
-        support: localDataWorker.support,
-        use: use,
-        config: config,
+        support              : localDataWorker.support,
+        use                  : use,
+        config               : config,
         openRealtimeDebugMode: openRealtimeDebugMode,
-        scan: scan,
-        cache: {},
-        version: '1.0.0'
+        scan                 : scan,
+        cache                : {},
+        version              : '1.0.0'
     };
 
     var data = seed.data = {
@@ -55,42 +54,46 @@
     data.base = location.origin;
 
     /**
-     *
+     * 分析
      * @param ids
      * @param callBack
      * @returns {Object} Seed
      */
-    function use(ids, callBack) {
+    function use( ids, callBack ) {
 
-        if (!Array.isArray(ids)) {
-            if (getType(ids) === 'string') {
+        if ( !Array.isArray( ids ) ) {
+            if ( getType( ids ) === 'string' ) {
                 ids = [ids];
             } else {
-                log('warn', '{fn:Seed.use} --- ', '[类型错误]请提供一个文件名或者文件名数组！');
+                log( 'warn', '{fn:Seed.use} --- ', '[类型错误]请提供一个文件名或者文件名数组！' );
                 return seed;
             }
         }
-        log('{fn:Seed.use} --- ', '原始数据：', ids);
-        ids = parseIds(ids);
-        log('{fn:Seed.use} --- ', '路由寻找到：', ids);
+
+        log( '{fn:Seed.use} --- ', '原始数据：', ids );
+
+        ids = parseIds( ids );
+
+        log( '{fn:Seed.use} --- ', '路由寻找到：', ids );
 
         // 虑掉已经下载的文件
-        ids = ids.filter(function (item) {
-            if (!seed.cache[item.id]) {
+        ids = ids.filter( function ( item ) {
+            if ( !seed.cache[item.id] ) {
                 return item;
             } else {
-                log('warn', '{fn:Seed.use} --- ', item.id, '已被下载！');
+                log( 'warn', '{fn:Seed.use} --- ', item.id, '已被下载！' );
             }
-        });
+        } );
 
         // 下载执行js
-        ids.length && dock(ids, function (codeStringQueue) {
-            codeStringQueue.forEach(function (item) {
+        ids.length && dock( ids, function ( codeStringQueue ) {
+            codeStringQueue.forEach( function ( item ) {
                 seed.cache[item.id] = !0;
-                executeCode(item);
-            });
+                executeCode( item );
+            } );
             callBack && callBack();
-        });
+        } );
+
         return seed;
     }
 
@@ -99,17 +102,17 @@
      * @param   {Object} setting
      * @returns {Object} Seed
      */
-    function config(setting) {
+    function config( setting ) {
         var key;
         var k;
         var curr;
         var prev;
-        for (key in setting) {
+        for ( key in setting ) {
             curr = setting[key];
             prev = data[key];
 
-            if (prev && getType(prev) === 'object') {
-                for (k in prev) {
+            if ( prev && getType( prev ) === 'object' ) {
+                for ( k in prev ) {
                     prev[k] = curr[k];
                 }
             } else {
@@ -124,249 +127,249 @@
      * @returns {Object} Seed
      */
     function openRealtimeDebugMode() {
-        log('============ 已开启无缓存模式 ============');
+        log( '============ 已开启无缓存模式 ============' );
         seed.support = false;
         return seed;
     }
 
     /**
-     *
+     * 扫描当前dom树中的文件
      * @returns {*}
      */
     function scan() {
-        var files = doc.querySelectorAll('[data-seed]');
-        var len = files.length;
+        var files = doc.querySelectorAll( '[data-seed]' );
+        var len   = files.length;
 
-        if (!len) {
+        if ( !len ) {
             return seed;
         }
 
         var ids = [];
-        var i = 0;
+        var i   = 0;
         var temp;
 
-        for (; i < len; i++) {
+        for ( ; i < len; i++ ) {
             temp = files[i];
-            ids.push(temp.dataset.seed);
+            ids.push( temp.dataset.seed );
         }
-        log('{fn:Seed.scan} --- ', '获取到的种子：', ids);
-        return seed.use(ids);
+        log( '{fn:Seed.scan} --- ', '获取到的种子：', ids );
+        return seed.use( ids );
     }
 
     /**
-     *
+     * 分析别名
      * @param id
      * @returns {*}
      */
-    function parseAlias(id) {
+    function parseAlias( id ) {
         var alias = data.alias;
-        return alias && (getType(alias[id]) === 'string') ? alias[id] : id;
+        return alias && (getType( alias[id] ) === 'string') ? alias[id] : id;
     }
 
     /**
-     *
+     * 分析文件资源链接所带参数（当作版本号使用）
      * @param item
      * @returns {*}
      */
-    function parseHook(item) {
-        var map = data.map;
-        var mapType = getType(map);
+    function parseHook( item ) {
+        var map     = data.map;
+        var mapType = getType( map );
 
-        var hook = '__seed_version__';
+        var hook       = '__seed_version__';
         var originalId = item.id;
 
         var splited;
         var id;
 
         // 如果映射规则是函数
-        if (mapType === 'function') {
-            splited = map(originalId);
-        } else if (mapType === 'regexp') {
+        if ( mapType === 'function' ) {
+            splited = map( originalId );
+        } else if ( mapType === 'regexp' ) {
             // 如果映射规则是正则
-            splited = originalId.match(map);
+            splited = originalId.match( map );
         } else {
             // 如果是错误的映射规则
-            splited = originalId.match(PARAM_RE);
+            splited = originalId.match( PARAM_RE );
         }
 
         // 当映射规则出现故障时，可能会得不到预期的结果
         // 此时直接跳出
-        if (getType(splited) !== 'array') {
-            log('warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过');
+        if ( getType( splited ) !== 'array' ) {
+            log( 'warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过' );
             return null;
         }
 
         id = splited[1];
 
-        if (data.ver) {
+        if ( data.ver ) {
             hook = data.ver;
         } else {
             // 若解析后，id未发生变化，则使用默认的hook规则
-            if (id !== originalId) {
+            if ( id !== originalId ) {
                 hook = splited[2];
             }
         }
 
-        item.id = id;
+        item.id   = id;
         item.hook = hook;
         return item;
     }
 
     /**
-     *
+     * 分析文件路径
      * @param ids
      * @returns {Array}
      */
-    function parseIds(ids) {
+    function parseIds( ids ) {
         var result = [];
-        ids.forEach(function (item) {
-            var temp = {
+        ids.forEach( function ( item ) {
+            var temp      = {
                 id: item.trim()
             };
-            var id = temp.id;
+            var id        = temp.id;
             var relative;
-            temp.position = doc.querySelector('[data-seed="' + id + '"]');
+            temp.position = doc.querySelector( '[data-seed="' + id + '"]' );
 
             // 查找绝对路径
-            if (!ABSOLUTE_RE.test(id)) {
+            if ( !ABSOLUTE_RE.test( id ) ) {
                 // 如果非绝对路径，则先在别名中查找
-                relative = parseAlias(id);
+                relative = parseAlias( id );
                 // 如果别名中已存在该路径，则使用
                 id = relative || id;
                 // 再做一次绝对路径的检测，因为允许在alias中配置其他‘绝对路径的文件’；
-                id = (ABSOLUTE_RE.test(id) ? id : data.base + id);
+                id      = (ABSOLUTE_RE.test( id ) ? id : data.base + id);
                 temp.id = id;
             }
 
-            temp.type = IS_CSS_RE.test(id) ? 'css' : 'js';
+            temp.type = IS_CSS_RE.test( id ) ? 'css' : 'js';
             // parseHook的时候如果出异常，直接跳过
-            temp = parseHook(temp);
-            temp && result.push(temp);
-        });
+            temp = parseHook( temp );
+            temp && result.push( temp );
+        } );
         return result;
     }
 
     /**
-     *
+     * 代码执行
      * @param options
      */
-    function executeCode(options) {
+    function executeCode( options ) {
         var isCSS;
         var tagName;
         var type;
         var target;
         var node = options.position;
-        if (!node) {
+        if ( !node ) {
             isCSS = options.type === 'css';
             isCSS
                 ? (tagName = 'style', type = 'text/css', target = doc.head)
                 : (tagName = 'script', type = 'text/javascript', target = doc.body);
-            node = doc.createElement(tagName);
+            node      = doc.createElement( tagName );
             node.type = type;
-            target.appendChild(node);
+            target.appendChild( node );
         } else {
-            node.removeAttribute('data-seed');
+            node.removeAttribute( 'data-seed' );
         }
         node.id = options.id;
-        node.appendChild(doc.createTextNode(options.data));
-        log('{fn:executeCode} --- ', '已执行：', options.id);
+        node.appendChild( doc.createTextNode( options.data ) );
+        log( '{fn:executeCode} --- ', '已执行：', options.id );
     }
 
     /**
-     *
+     * 做一些分发工作
      * @param ids
      * @param callBack
      */
-    function dock(ids, callBack) {
+    function dock( ids, callBack ) {
         var codeStringQueue = [];
-        var fns = [];
+        var fns             = [];
         // 远程拉数据方法
-        var fnWrapperFromRemote = function (item) {
-            return function (next) {
-                getFile(item.id, function (codeString) {
+        var fnWrapperFromRemote = function ( item ) {
+            return function ( next ) {
+                getFile( item.id, function ( codeString ) {
                     item.data = codeString;
-                    item.type !== 'css' && codeStringQueue.push(item);
+                    item.type !== 'css' && codeStringQueue.push( item );
 
                     localDataWorker
-                        .setItem(item.id, codeString)
-                        .setItem(item.id + '@hook', item.hook);
+                        .setItem( item.id, codeString )
+                        .setItem( item.id + '@hook', item.hook );
 
-                    next(item);
+                    next( item );
                 }, function () {
-                    next(null);
-                });
+                    next( null );
+                } );
             }
         };
         // 本地查找
-        var fnWrapperFromLocal = function (item) {
-            return function (next) {
-                item.data = localDataWorker.getItem(item.id);
-                item.type !== 'css' && codeStringQueue.push(item);
-                next(item);
+        var fnWrapperFromLocal = function ( item ) {
+            return function ( next ) {
+                item.data = localDataWorker.getItem( item.id );
+                item.type !== 'css' && codeStringQueue.push( item );
+                next( item );
             }
         };
         // 打包成一个函数队列
-        ids.forEach(function (item) {
+        ids.forEach( function ( item ) {
             var needRemote =
-                (!seed.support)
-                || (!localDataWorker.getItem(item.id)
-                || (localDataWorker.getItem(item.id + '@hook') !== item.hook));
+                    (!seed.support)
+                    || (!localDataWorker.getItem( item.id )
+                    || (localDataWorker.getItem( item.id + '@hook' ) !== item.hook));
 
-            log('{fn:dock} --- ', (needRemote ? '' : '不') + '需要下载：', item.id);
+            log( '{fn:dock} --- ', (needRemote ? '' : '不') + '需要下载：', item.id );
 
             var fn = needRemote
-                ? fnWrapperFromRemote(item)
-                : fnWrapperFromLocal(item);
+                ? fnWrapperFromRemote( item )
+                : fnWrapperFromLocal( item );
 
-            if (item.type === 'css') {
-                fn(function (item) {
-                    item && executeCode(item);
-                });
+            if ( item.type === 'css' ) {
+                fn( function ( item ) {
+                    item && executeCode( item );
+                } );
             } else {
-                fns.push(fn);
+                fns.push( fn );
             }
-        });
+        } );
         // 函数队列追加一个函数，待完成后执行回调
-        fns.push(function () {
-            callBack && callBack(codeStringQueue);
-        });
+        fns.push( function () {
+            callBack && callBack( codeStringQueue );
+        } );
         // 执行函数队列
-        queue(fns);
+        queue( fns );
     }
 
     /**
-     *
+     * 简单同步队列
      * @param fns
      * @param context
      */
-    function queue(fns, context) {
+    function queue( fns, context ) {
         (function next() {
-            if (fns.length > 0) {
+            if ( fns.length > 0 ) {
                 var fn = fns.shift();
-                fn.apply(context, [next].concat(Array.prototype.slice.call(arguments, 0)));
+                fn.apply( context, [next].concat( Array.prototype.slice.call( arguments, 0 ) ) );
             }
         })();
     }
 
     /**
-     *
+     * 获取严格数据类型
      * @param object
      * @returns {string}
      */
-    function getType(object) {
-        return Object.prototype.toString.call(object).replace(/\[\object|]|\s/gi, '').toLowerCase();
+    function getType( object ) {
+        return Object.prototype.toString.call( object ).replace( /\[\object|]|\s/gi, '' ).toLowerCase();
     }
 
     /**
-     *
+     * localStorage 检测
      * @returns {boolean}
      */
     function isSupportLocalStorage() {
         var support = true;
         try {
-            ls.setItem('__seed_test__', 1);
-            ls.removeItem('__seed_test__');
-        } catch (e) {
+            ls.setItem( '__seed_test__', 1 );
+            ls.removeItem( '__seed_test__' );
+        } catch ( e ) {
             support = false;
         }
         // log('{fn:isSupportLocalStorage} --- ', (support ? '' : '不'), 'localStorage');
@@ -374,53 +377,63 @@
     }
 
     /**
-     *
+     * ajax的 方式获取文件(注意CORF)
      * @param url
      * @param success
      * @param error
      * @returns {XMLHttpRequest}
      */
-    function getFile(url, success, error) {
-        log('{fn:getFile} --- ', '正在通过AJAX加载：', url);
+    function getFile( url, success, error ) {
+        log( '{fn:getFile} --- ', '正在通过AJAX加载：', url );
+
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
+        xhr.open( 'GET', url, true );
+
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
+            if ( xhr.readyState === 4 ) {
                 xhr.onreadystatechange = noop;
-                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-                    log('{fn:getFile} --- ', '已加载：', url);
-                    success && success(xhr.responseText, xhr);
+                if ( (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 ) {
+                    log( '{fn:getFile} --- ', '已加载：', url );
+                    success && success( xhr.responseText, xhr );
                 } else {
-                    getFileError(xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, error);
+                    getFileError( xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, error );
                 }
             }
         };
-        xhr.send(null);
+
+        xhr.send( null );
         return xhr;
     }
 
     /**
-     *
+     * catch接口
      * @param error
      * @param type
      * @param xhr
      * @param callBack
      */
-    function getFileError(error, type, xhr, callBack) {
-        log('warn', '{fn:getFileError} --- ', '资源加载失败！', arguments);
-        callBack && callBack(error, type, xhr);
+    function getFileError( error, type, xhr, callBack ) {
+        log( 'warn', '{fn:getFileError} --- ', '资源加载失败！', arguments );
+        callBack && callBack( error, type, xhr );
     }
 
     /**
-     *
+     * 打印日志
      * @returns {boolean|root.Seed.data.debug|*}
      */
-    function log(/* type [, arg1, arg2...etc. ]*/) {
-        var args = Array.prototype.slice.call(arguments);
-        var type = args[0];
-        var isSpecified = !!~['dir', 'warn', 'info', 'error', 'group', 'groupEnd'].indexOf(type);
+    function log( /* type [, arg1, arg2...etc. ]*/ ) {
+
+        if ( !data.debug ) {
+            return;
+        }
+
+        var args        = Array.prototype.slice.call( arguments );
+        var type        = args[0];
+        var isSpecified = !!~['dir', 'warn', 'info', 'error', 'group', 'groupEnd'].indexOf( type );
+
         args = isSpecified ? (args.shift(), args) : args;
-        args.unshift('[Debug:] === ');
-        return data.debug && console[isSpecified ? type : 'log'].apply(console, args);
+
+        args.unshift( '[Debug:] === ' );
+        return console[isSpecified ? type : 'log'].apply( console, args );
     }
-}(window);
+}( window );
