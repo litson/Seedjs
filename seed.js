@@ -1,6 +1,6 @@
 /**
  * @file
- * @fileoverview 
+ * @fileoverview
  * @authors      zhangtao23
  * @date         2015/12/5
  * @version      1.3.0

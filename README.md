@@ -1,128 +1,58 @@
 # Seedjs
 
-JavaScript library for seeding static files into localStorge.
+一个可以将您的js/css文件添加到`localStorage`中管理的js库。（不同域的文件，需要对应服务器开启CORS）
 
-## TODO
-- JSONP support.
-- Combine in native.
-- CSS don't need to execute sequentially.
-- File position deal, top or bottom or somewhere.
+# 特性
 
-## Features
+存储文件到`localStorage`，可帮助您实现半离线应用。
 
-- `Seed.config`
-
-```js
-
-  Seed.config({
-        base: 'http://yourdomain.org',                        // Your domain
-        // Tag some alias for your resources, you can setting an absoultly path into it.
-        alias: {                                              
-            zepto: 'http://cdn.somedomain.org/zepto.js',
-            angularjs: '/static/js/angularjs.js',
-            bootstrap: '/static/css/bootstrap.css'
-        },
-        // Open or close debug mode.
-        debug: true,
-        // Default : '__seed_version_' , if you changed it, the resouces in localStorge will be updated.
-        ver: 'timestamps'
-    });
-
+```html
+    
+    <style data-seed='/path/to/file/a.css'></style>
+    <script data-seed='/path/to/file/a.js'></script>
+    
+    <script>
+        // 第二次进入时，将不会触发请求。
+        Seed.scan();
+    </script>
 
 ```
 
-- `Seed.use`
+增量更新
 
-```js
-
-  // When all the file that your required be loaded, then the 'callBack' function can be used.
-   function callBack(){
-      console.log(Zepto);
-   }
-
-  Seed.use(
-      [
-        'zepto'
-        , 'angularjs'
-        , 'bootstrap'
-        /* You can also setting some extra file. */
-        , 'path/to/some/file.js' 
-      ]
-      , callBack
-  );
+```html
+    
+        <style data-seed='/path/to/file/a.css?ver=timestamps'></style>
+        <script data-seed='/path/to/file/a.js'></script>
+        
+        <script>
+            // 时间戳更新后，本地存储的a.css也会同步被更新。
+            Seed.scan();
+        </script>
 
 ```
 
-- `Seed.openRealtimeDebugMode`
+同步下载，按序执行.
 
-```js
-
-  // Don't use localStorge.
-  Seed.openRealtimeDebugMode();
-
-
-```
-
-- `Seed.scan`
+不用担心代码的执行顺序，只需提供一个您想要的文件列表。
 
 ```html
 
- <!-- =================== If Seedjs has been loaded in this page =================== -->
+    <script data-seed='jquery.js'></script>
+    <script data-seed='bootstrap.js'></script>
 
- <style data-seed="path/to/file.css"></style>
- <script>
-    Seed.scan(); // Then 'path/to/file.css' can be preferred loaded.
- </script>
-
- <script data-seed="/path/to/file.js"></script>
- <script>
-    // Then 'path/to/file.js' can be preferred loaded.Another one 'path/to/file.css' will not be used twice.
-    Seed.scan(); 
- </script>
- 
+    <script>
+        
+        // bootstrap.js依赖jquery。
+        // Seed内部处理的时候，会并发下载bootstrap.js和jquery，
+        // 但是执行他们的时候会严格按照顺序
+        
+        Seed.scan();
+    
+    </script>
 
 ```
 
-## TEST
 
-- Network: GPRS (50Kbps 500ms RTT)
-- Number of resouce: 2
-- Resouces size: about 20kb.
-- No pictures.
-
-<table>
-  <tr>
-    <th> Cache </th>
-    <th> localStorage </th>
-    <th> Time </th>
-  </tr>
-  <tr>
-    <td> no </td>
-    <td> no </td>
-    <td> 6550 </td>
-  </tr>
-  <tr>
-    <td> yes </td>
-    <td> no </td>
-    <td> 2798 </td>
-  </tr>
-  <tr>
-    <td> no </td>
-    <td> yes (No cache and first loading, need seeding into localStorage) </td>
-    <td> 7010 </td>
-  </tr>
-  <tr>
-    <td> yes </td>
-    <td> yes (Using cache and first load, need seeding into localStorage) </td>
-    <td> 2345 </td>
-  </tr>
-  <tr>
-    <td> yes </td>
-    <td> yes (Resouces has beed seeded, cache neither need)</td>
-    <td> 935 </td>
-  </tr>
-</table>
-
-
-
+# API
 
