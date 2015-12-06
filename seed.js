@@ -1,9 +1,9 @@
 /**
  * @file
- * @fileoverview seed.js 2.0 ÐÞ¸´bug¡£
+ * @fileoverview 
  * @authors      zhangtao23
  * @date         2015/12/5
- * @version      1.0.0
+ * @version      1.3.0
  * @note
  */
 
