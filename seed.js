@@ -1,35 +1,40 @@
 /**
- *
- * TODO:
- *     1.支持JSONP拉取combo数据
- *     2.若拉取js出现异常，采用创建script + src的传统方式下载 (会影响执行速度)
- *     3.本地combo文件
- *     4.CSS文件并发下载
- *     4.所有文件改为并发下载，但执行是按序，并做本地合并
- *     6.deal buttom top
- *
+ * @file
+ * @fileoverview seed.js 2.0 修复bug。
+ * @authors      zhangtao23
+ * @date         2015/12/5
+ * @version      1.0.0
+ * @note
  */
-!function __seed_package__( root ) {
 
-    if ( root.Seed ) {
-        return;
+/* global module */
+
+'use strict';
+(function ( win, doc ) {
+
+    function noop() {
+        return function () {
+        }
     }
 
-    var noop = function () {
-    };
-
-    var ls          = root.localStorage;
-    var doc         = document;
-    var ABSOLUTE_RE = /^\/\/.|:\//;
-    var IS_CSS_RE   = /\.css(?:\?|$)/i;
-    var PARAM_RE    = /^(.*\.(?:css|js))(.*)$/i;
+    var ls = win.localStorage;
 
     var localDataWorker = {
-        support: isSupportLocalStorage(),
+        support: (function () {
+            var support = true;
+            try {
+                ls.setItem( '__seed_test__', 1 );
+                ls.removeItem( '__seed_test__' );
+            } catch ( e ) {
+                support = false;
+            }
+            return support;
+        })(),
         setItem: function ( key, value ) {
             if ( this.support ) {
                 ls.setItem( key, value );
             }
+            // else do cookie.
             return this;
         },
         getItem: function ( key ) {
@@ -37,363 +42,15 @@
         }
     };
 
-    var seed = root.Seed = {
-        support              : localDataWorker.support,
-        use                  : use,
-        config               : config,
-        openRealtimeDebugMode: openRealtimeDebugMode,
-        scan                 : scan,
-        cache                : {},
-        version              : '1.0.0'
-    };
-
-    var data = seed.data = {
-        debug: false
-    };
-
-    data.base = location.origin;
-
-    /**
-     * 分析
-     * @param ids
-     * @param callBack
-     * @returns {Object} Seed
-     */
-    function use( ids, callBack ) {
-
-        if ( !Array.isArray( ids ) ) {
-            if ( getType( ids ) === 'string' ) {
-                ids = [ids];
-            } else {
-                log( 'warn', '{fn:Seed.use} --- ', '[类型错误]请提供一个文件名或者文件名数组！' );
-                return seed;
-            }
-        }
-
-        log( '{fn:Seed.use} --- ', '原始数据：', ids );
-
-        ids = parseIds( ids );
-
-        log( '{fn:Seed.use} --- ', '路由寻找到：', ids );
-
-        // 虑掉已经下载的文件
-        ids = ids.filter( function ( item ) {
-            if ( !seed.cache[item.id] ) {
-                return item;
-            } else {
-                log( 'warn', '{fn:Seed.use} --- ', item.id, '已被下载！' );
-            }
-        } );
-
-        // 下载执行js
-        ids.length && dock( ids, function ( codeStringQueue ) {
-            codeStringQueue.forEach( function ( item ) {
-                seed.cache[item.id] = !0;
-                executeCode( item );
-            } );
-            callBack && callBack();
-        } );
-
-        return seed;
-    }
-
-    /**
-     * 配置接口
-     * @param   {Object} setting
-     * @returns {Object} Seed
-     */
-    function config( setting ) {
-        var key;
-        var k;
-        var curr;
-        var prev;
-        for ( key in setting ) {
-            curr = setting[key];
-            prev = data[key];
-
-            if ( prev && getType( prev ) === 'object' ) {
-                for ( k in prev ) {
-                    prev[k] = curr[k];
-                }
-            } else {
-                data[key] = curr;
-            }
-        }
-        return seed;
-    }
-
-    /**
-     * 启动是是获取资源
-     * @returns {Object} Seed
-     */
-    function openRealtimeDebugMode() {
-        log( '============ 已开启无缓存模式 ============' );
-        seed.support = false;
-        return seed;
-    }
-
-    /**
-     * 扫描当前dom树中的文件
-     * @returns {*}
-     */
-    function scan() {
-        var files = doc.querySelectorAll( '[data-seed]' );
-        var len   = files.length;
-
-        if ( !len ) {
-            return seed;
-        }
-
-        var ids = [];
-        var i   = 0;
-        var temp;
-
-        for ( ; i < len; i++ ) {
-            temp = files[i];
-            ids.push( temp.dataset.seed );
-        }
-        log( '{fn:Seed.scan} --- ', '获取到的种子：', ids );
-        return seed.use( ids );
-    }
-
-    /**
-     * 分析别名
-     * @param id
-     * @returns {*}
-     */
-    function parseAlias( id ) {
-        var alias = data.alias;
-        return alias && (getType( alias[id] ) === 'string') ? alias[id] : id;
-    }
-
-    /**
-     * 分析文件资源链接所带参数（当作版本号使用）
-     * @param item
-     * @returns {*}
-     */
-    function parseHook( item ) {
-        var map     = data.map;
-        var mapType = getType( map );
-
-        var hook       = '__seed_version__';
-        var originalId = item.id;
-
-        var splited;
-        var id;
-
-        // 如果映射规则是函数
-        if ( mapType === 'function' ) {
-            splited = map( originalId );
-        } else if ( mapType === 'regexp' ) {
-            // 如果映射规则是正则
-            splited = originalId.match( map );
-        } else {
-            // 如果是错误的映射规则
-            splited = originalId.match( PARAM_RE );
-        }
-
-        // 当映射规则出现故障时，可能会得不到预期的结果
-        // 此时直接跳出
-        if ( getType( splited ) !== 'array' ) {
-            log( 'warn', '{fn:parseHook} --- ', '解析：', originalId, '失败，', '自动略过' );
-            return null;
-        }
-
-        id = splited[1];
-
-        if ( data.ver ) {
-            hook = data.ver;
-        } else {
-            // 若解析后，id未发生变化，则使用默认的hook规则
-            if ( id !== originalId ) {
-                hook = splited[2];
-            }
-        }
-
-        item.id   = id;
-        item.hook = hook;
-        return item;
-    }
-
-    /**
-     * 分析文件路径
-     * @param ids
-     * @returns {Array}
-     */
-    function parseIds( ids ) {
-        var result = [];
-        ids.forEach( function ( item ) {
-            var temp      = {
-                id: item.trim()
-            };
-            var id        = temp.id;
-            var relative;
-            temp.position = doc.querySelector( '[data-seed="' + id + '"]' );
-
-            // 查找绝对路径
-            if ( !ABSOLUTE_RE.test( id ) ) {
-                // 如果非绝对路径，则先在别名中查找
-                relative = parseAlias( id );
-                // 如果别名中已存在该路径，则使用
-                id = relative || id;
-                // 再做一次绝对路径的检测，因为允许在alias中配置其他‘绝对路径的文件’；
-                id      = (ABSOLUTE_RE.test( id ) ? id : data.base + id);
-                temp.id = id;
-            }
-
-            temp.type = IS_CSS_RE.test( id ) ? 'css' : 'js';
-            // parseHook的时候如果出异常，直接跳过
-            temp = parseHook( temp );
-            temp && result.push( temp );
-        } );
-        return result;
-    }
-
-    /**
-     * 代码执行
-     * @param options
-     */
-    function executeCode( options ) {
-        var isCSS;
-        var tagName;
-        var type;
-        var target;
-        var node = options.position;
-        if ( !node ) {
-            isCSS = options.type === 'css';
-            isCSS
-                ? (tagName = 'style', type = 'text/css', target = doc.head)
-                : (tagName = 'script', type = 'text/javascript', target = doc.body);
-            node      = doc.createElement( tagName );
-            node.type = type;
-            target.appendChild( node );
-        } else {
-            node.removeAttribute( 'data-seed' );
-        }
-        node.id = options.id;
-        node.appendChild( doc.createTextNode( options.data ) );
-        log( '{fn:executeCode} --- ', '已执行：', options.id );
-    }
-
-    /**
-     * 做一些分发工作
-     * @param ids
-     * @param callBack
-     */
-    function dock( ids, callBack ) {
-        var codeStringQueue = [];
-        var fns             = [];
-        // 远程拉数据方法
-        var fnWrapperFromRemote = function ( item ) {
-            return function ( next ) {
-                getFile( item.id, function ( codeString ) {
-                    item.data = codeString;
-                    item.type !== 'css' && codeStringQueue.push( item );
-
-                    localDataWorker
-                        .setItem( item.id, codeString )
-                        .setItem( item.id + '@hook', item.hook );
-
-                    next( item );
-                }, function () {
-                    next( null );
-                } );
-            }
-        };
-        // 本地查找
-        var fnWrapperFromLocal = function ( item ) {
-            return function ( next ) {
-                item.data = localDataWorker.getItem( item.id );
-                item.type !== 'css' && codeStringQueue.push( item );
-                next( item );
-            }
-        };
-        // 打包成一个函数队列
-        ids.forEach( function ( item ) {
-            var needRemote =
-                    (!seed.support)
-                    || (!localDataWorker.getItem( item.id )
-                    || (localDataWorker.getItem( item.id + '@hook' ) !== item.hook));
-
-            log( '{fn:dock} --- ', (needRemote ? '' : '不') + '需要下载：', item.id );
-
-            var fn = needRemote
-                ? fnWrapperFromRemote( item )
-                : fnWrapperFromLocal( item );
-
-            if ( item.type === 'css' ) {
-                fn( function ( item ) {
-                    item && executeCode( item );
-                } );
-            } else {
-                fns.push( fn );
-            }
-        } );
-        // 函数队列追加一个函数，待完成后执行回调
-        fns.push( function () {
-            callBack && callBack( codeStringQueue );
-        } );
-        // 执行函数队列
-        queue( fns );
-    }
-
-    /**
-     * 简单同步队列
-     * @param fns
-     * @param context
-     */
-    function queue( fns, context ) {
-        (function next() {
-            if ( fns.length > 0 ) {
-                var fn = fns.shift();
-                fn.apply( context, [next].concat( Array.prototype.slice.call( arguments, 0 ) ) );
-            }
-        })();
-    }
-
-    /**
-     * 获取严格数据类型
-     * @param object
-     * @returns {string}
-     */
-    function getType( object ) {
-        return Object.prototype.toString.call( object ).replace( /\[\object|]|\s/gi, '' ).toLowerCase();
-    }
-
-    /**
-     * localStorage 检测
-     * @returns {boolean}
-     */
-    function isSupportLocalStorage() {
-        var support = true;
-        try {
-            ls.setItem( '__seed_test__', 1 );
-            ls.removeItem( '__seed_test__' );
-        } catch ( e ) {
-            support = false;
-        }
-        // log('{fn:isSupportLocalStorage} --- ', (support ? '' : '不'), 'localStorage');
-        return support;
-    }
-
-    /**
-     * ajax的 方式获取文件(注意CORF)
-     * @param url
-     * @param success
-     * @param error
-     * @returns {XMLHttpRequest}
-     */
     function getFile( url, success, error ) {
-        log( '{fn:getFile} --- ', '正在通过AJAX加载：', url );
 
         var xhr = new XMLHttpRequest();
-        xhr.open( 'GET', url, true );
+        xhr.open( 'GET', appendQuery( url, ('_s_t_=' + (+new Date)) ), true );
 
         xhr.onreadystatechange = function () {
             if ( xhr.readyState === 4 ) {
                 xhr.onreadystatechange = noop;
                 if ( (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 ) {
-                    log( '{fn:getFile} --- ', '已加载：', url );
                     success && success( xhr.responseText, xhr );
                 } else {
                     getFileError( xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, error );
@@ -405,35 +62,278 @@
         return xhr;
     }
 
-    /**
-     * catch接口
-     * @param error
-     * @param type
-     * @param xhr
-     * @param callBack
-     */
     function getFileError( error, type, xhr, callBack ) {
-        log( 'warn', '{fn:getFileError} --- ', '资源加载失败！', arguments );
         callBack && callBack( error, type, xhr );
     }
 
-    /**
-     * 打印日志
-     * @returns {boolean|root.Seed.data.debug|*}
-     */
-    function log( /* type [, arg1, arg2...etc. ]*/ ) {
+    function appendQuery( url, query ) {
+        return (query === '') ? url : (url + '&' + query).replace( /[&?]{1,2}/, '?' );
+    }
 
-        if ( !data.debug ) {
-            return;
+    /////////////////////////////////////////////////////////////////////
+
+    var seed = {
+        scan : scan,
+        cache: {},
+        use  : use
+    };
+
+    var data = seed.data = {
+        debug: true
+    };
+
+    data.base = win.location.origin;
+
+    function scan( callBack ) {
+        var files = doc.querySelectorAll( '[data-seed]' );
+        var len   = files.length;
+        var ids   = [];
+
+        if ( !len ) {
+            return seed;
         }
 
-        var args        = Array.prototype.slice.call( arguments );
-        var type        = args[0];
-        var isSpecified = !!~['dir', 'warn', 'info', 'error', 'group', 'groupEnd'].indexOf( type );
+        for ( var i = 0; i < len; i++ ) {
+            ids.push( files[i].dataset.seed );
+        }
 
-        args = isSpecified ? (args.shift(), args) : args;
-
-        args.unshift( '[Debug:] === ' );
-        return console[isSpecified ? type : 'log'].apply( console, args );
+        return seed.use( ids, callBack );
     }
-}( window );
+
+    var _queue       = [];
+    var cache        = seed.cache;
+    var dependencies = {};
+
+    function use( ids, callBack ) {
+
+        if ( !ids ) {
+            return seed;
+        }
+
+        if ( Object.prototype.toString.call( callBack ) !== '[object Function]' ) {
+            callBack = noop();
+        }
+
+        var index = _queue.indexOf( callBack );
+
+        if ( -1 === index ) {
+            _queue.push( callBack );
+            return use( ids, callBack );
+        }
+
+        if ( 'string' === typeof ids ) {
+            ids = [ids];
+        }
+
+        if ( !Array.isArray( ids ) ) {
+            console.warn( '[Seedjs can\'t resolve a non array parameter!]' );
+            return seed;
+        }
+
+        _parseIds( ids, index );
+
+        // 由docker处理加载任务
+        _docker( dependencies[index].deps );
+        return seed;
+    }
+
+    function _parseIds( ids, index ) {
+        ids.forEach( function ( id ) {
+
+            if ( !/^\/\/.|:\//.test( id ) ) {
+                id = data.base + id;
+            }
+
+            var fileType = /\.css(?:\?|$)/i.test( id ) ? 'css' : 'js';
+
+            // 声明依赖关系
+            if ( !cache[id] ) {
+                cache[id] = {
+                    id          : id,
+                    data        : null,
+                    fileType    : fileType,
+                    // 标记，该文件被传入的第N个回调依赖
+                    dependencies: [index],
+                    status      : 'ready',
+                    position    : doc.querySelector( '[data-seed="' + id + '"]' )
+                };
+            } else {
+                cache[id].dependencies.push( index );
+            }
+
+            cache[id] = _parseHook( cache[id] );
+
+            if ( !dependencies[index] ) {
+                dependencies[index] = {
+                    ids : [id],
+                    // 标记，该回调依赖哪些文件
+                    deps: [id]
+                }
+            } else {
+                dependencies[index].ids.push( id );
+                dependencies[index].deps.push( id );
+            }
+        } );
+    }
+
+    function _parseHook( item ) {
+
+        function defaultMap( id ) {
+            var datas = id.match( /^(.*\.(?:css|js))(.*)$/i );
+            return {
+                id     : datas[1],
+                fileUrl: id,
+                hook   : datas[2] || '__seed_version__'
+            }
+        }
+
+        var defaultValue = {
+            id     : item.id,
+            fileUrl: item.id,
+            hook   : '__seed_version__'
+        };
+
+        var map        = data.map || defaultMap;
+        var parsedData = map( item.id, defaultValue );
+
+        if ( !parsedData || typeof parsedData !== 'object' ) {
+            console.warn(
+                '\n[ Seed Warning ]',
+                '\nYou may provide an incorrect \'map\' method!',
+                '\nThe \'map\' method expected return value is :\n',
+                JSON.stringify( {
+                    id     : 'Stored \'ID\'',
+                    fileUrl: 'Original file URL',
+                    hook   : 'Need to update tag'
+                }, null, 4 ),
+                '\nYou can refer to the following method :\n',
+                defaultMap.toString(),
+                '\n Seedjs will use default value :\n',
+                JSON.stringify( defaultValue, null, 4 ),
+                '\n However, it\'s maybe can\'t complete update!'
+            );
+            parsedData = defaultValue;
+        }
+
+        item.id      = parsedData.id;
+        item.hook    = parsedData.hook;
+        item.fileUrl = parsedData.fileUrl;
+
+        return item;
+    }
+
+    function _docker( ids ) {
+        ids.slice( 0 ).forEach( function ( key ) {
+            var item = cache[key];
+
+            // 如果已经加载完毕的模块
+            if ( item.status === 'loaded' ) {
+                return _emit( item );
+            }
+
+            var codeString = localDataWorker.getItem( item.id );
+
+            // hook不同或者未存储,均ajax回掉通知
+            if ( (item.hook !== localDataWorker.getItem( item.id + '@hook' ))
+                || !codeString ) {
+                _fileLoad( item );
+            } else {
+                item.data = codeString;
+                _emit( item );
+            }
+        } );
+    }
+
+    function _fileLoad( data ) {
+        if ( data.status === 'pending' ) {
+            return;
+        }
+        data.status = 'pending';
+        getFile(
+            data.fileUrl,
+            function ( ajaxCodeString ) {
+                data.data = ajaxCodeString;
+                localDataWorker.setItem( data.id + '@hook', data.hook );
+                localDataWorker.setItem( data.id, ajaxCodeString );
+                _emit( data );
+            }
+        );
+    }
+
+    // 通知解除依赖
+    function _emit( data ) {
+        data
+            .dependencies
+            .slice( 0 )
+            .forEach( function ( index ) {
+
+                var globalDeps = dependencies[index];
+
+                globalDeps.deps.splice(
+                    globalDeps.deps.indexOf( data.id ), 1
+                );
+
+                data.dependencies.splice(
+                    data.dependencies.indexOf( index ), 1
+                );
+
+                if ( globalDeps.deps.length === 0 ) {
+                    _execute( globalDeps.ids, index );
+                }
+            } );
+    }
+
+    function _execute( ids, index ) {
+        ids.forEach( function ( item ) {
+            _executeFileCode( cache[item] );
+        } );
+        _queue[index]();
+    }
+
+    function _executeFileCode( data ) {
+
+        if ( data.status === 'loaded' ) {
+            return;
+        }
+        data.status = 'loaded';
+
+        var attr = {
+            css: {
+                tagName: 'style',
+                props  : {
+                    type: 'text/css',
+                    id  : data.id
+                }
+            },
+            js : {
+                tagName: 'script',
+                props  : {
+                    type: 'text/javascript',
+                    id  : data.id
+                }
+            }
+        };
+
+        var temp = attr[data.fileType];
+        var node = data.position || doc.createElement( temp.tagName );
+
+        for ( var key in temp.props ) {
+            node[key] = temp.props[key];
+        }
+
+        if ( !data.position ) {
+            doc.head.appendChild( node );
+        }
+
+        node.removeAttribute( 'data-seed' );
+        node.appendChild(
+            doc.createTextNode( data.data )
+        );
+
+        data.data     = null;
+        data.position = null;
+    }
+
+    win.Seed = seed;
+
+})( window, document );
