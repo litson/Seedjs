@@ -1,10 +1,10 @@
 # Seedjs
 
-һ�����Խ�����js/css�ļ����ӵ�`localStorage`�й�����js�⡣����ͬ����ļ�����Ҫ��Ӧ����������CORS��
+一个可以将您的js/css文件添加到`localStorage`中管理的js库。（不同域的文件，需要对应服务器开启CORS）
 
-# ����
+# 特性
 
-�洢�ļ���`localStorage`���ɰ�����ʵ�ְ�����Ӧ�á�
+存储文件到`localStorage`，可帮助您实现半离线应用。
 
 ```html
     
@@ -12,13 +12,13 @@
     <script data-seed='/path/to/file/a.js'></script>
     
     <script>
-        // �ڶ��ν���ʱ�������ᴥ������
+        // 第二次进入时，将不会触发请求。
         Seed.scan();
     </script>
 
 ```
 
-��������
+增量更新
 
 ```html
     
@@ -26,15 +26,15 @@
         <script data-seed='/path/to/file/a.js'></script>
         
         <script>
-            // ʱ������º󣬱��ش洢��a.cssҲ��ͬ�������¡�
+            // 时间戳更新后，本地存储的a.css也会同步被更新。
             Seed.scan();
         </script>
 
 ```
 
-ͬ�����أ�����ִ��.
+同步下载，按序执行.
 
-���õ��Ĵ����ִ��˳��ֻ���ṩһ������Ҫ���ļ��б���
+不用担心代码的执行顺序，只需提供一个您想要的文件列表。
 
 ```html
 
@@ -43,9 +43,9 @@
 
     <script>
         
-        // bootstrap.js����jquery��
-        // Seed�ڲ�������ʱ�򣬻Ტ������bootstrap.js��jquery��
-        // ����ִ�����ǵ�ʱ����ϸ���˳��
+        // bootstrap.js依赖jquery。
+        // Seed内部处理的时候，会并发下载bootstrap.js和jquery，
+        // 但是执行他们的时候会严格按照顺序
         
         Seed.scan();
     
@@ -55,4 +55,21 @@
 
 
 # API
+
+## Seed.data.map
+
+## Seed.scan
+
+<table>
+    <tr>
+        <th>name</th>
+        <th>required</th>
+        <th>desc</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+</table>
 
