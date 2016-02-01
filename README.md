@@ -58,18 +58,35 @@
 
 ## Seed.data.map
 
-## Seed.scan
-
-<table>
+<table width="100%">
     <tr>
-        <th>name</th>
-        <th>required</th>
-        <th>desc</th>
+        <th>名称</th>
+        <th>类型</th>
+        <th>必须</th>
+        <th>回调</th>
     </tr>
     <tr>
-        <th></th>
-        <th></th>
-        <th></th>
+        <td> callback </td>
+        <td> function </td>
+        <td> false </td>
+        <td>  </td>
+    </tr>
+</table>
+
+## Seed.scan
+
+<table width="100%">
+    <tr>
+        <th>名称</th>
+        <th>类型</th>
+        <th>必须</th>
+        <th>回调</th>
+    </tr>
+    <tr>
+        <td> callback </td>
+        <td> function </td>
+        <td> false </td>
+        <td> 依赖于页面上 `[data-seed]` 资源标记元素，资源加载完毕后，会触发改回调 </td>
     </tr>
 </table>
 
