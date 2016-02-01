@@ -132,7 +132,7 @@
 
         _parseIds( ids, index );
 
-        // ÓÉdocker´¦Àí¼ÓÔØÈÎÎñ
+        // ç”±dockerå¤„ç†åŠ è½½ä»»åŠ¡
         _docker( dependencies[index].deps );
         return seed;
     }
@@ -146,13 +146,13 @@
 
             var fileType = /\.css(?:\?|$)/i.test( id ) ? 'css' : 'js';
 
-            // ÉùÃ÷ÒÀÀµ¹ØÏµ
+            // å£°æ˜ä¾èµ–å…³ç³»
             if ( !cache[id] ) {
                 cache[id] = {
                     id          : id,
                     data        : null,
                     fileType    : fileType,
-                    // ±ê¼Ç£¬¸ÃÎÄ¼ş±»´«ÈëµÄµÚN¸ö»Øµ÷ÒÀÀµ
+                    // æ ‡è®°ï¼Œè¯¥æ–‡ä»¶è¢«ä¼ å…¥çš„ç¬¬Nä¸ªå›è°ƒä¾èµ–
                     dependencies: [index],
                     status      : 'ready',
                     position    : doc.querySelector( '[data-seed="' + id + '"]' )
@@ -166,7 +166,7 @@
             if ( !dependencies[index] ) {
                 dependencies[index] = {
                     ids : [id],
-                    // ±ê¼Ç£¬¸Ã»Øµ÷ÒÀÀµÄÄĞ©ÎÄ¼ş
+                    // æ ‡è®°ï¼Œè¯¥å›è°ƒä¾èµ–å“ªäº›æ–‡ä»¶
                     deps: [id]
                 }
             } else {
@@ -226,14 +226,14 @@
         ids.slice( 0 ).forEach( function ( key ) {
             var item = cache[key];
 
-            // Èç¹ûÒÑ¾­¼ÓÔØÍê±ÏµÄÄ£¿é
+            // å¦‚æœå·²ç»åŠ è½½å®Œæ¯•çš„æ¨¡å—
             if ( item.status === 'loaded' ) {
                 return _emit( item );
             }
 
             var codeString = localDataWorker.getItem( item.id );
 
-            // hook²»Í¬»òÕßÎ´´æ´¢,¾ùajax»ØµôÍ¨Öª
+            // hookä¸åŒæˆ–è€…æœªå­˜å‚¨,å‡ajaxå›æ‰é€šçŸ¥
             if ( (item.hook !== localDataWorker.getItem( item.id + '@hook' ))
                 || !codeString ) {
                 _fileLoad( item );
@@ -260,7 +260,7 @@
         );
     }
 
-    // Í¨Öª½â³ıÒÀÀµ
+    // é€šçŸ¥è§£é™¤ä¾èµ–
     function _emit( data ) {
         data
             .dependencies
