@@ -6,15 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<div class="container">
-    <div class="alert alert-warning">
-        Done!
+<div class="container" id="vueRoot">
+    <div class="alert alert-warning" v-text="'耗时:' + time + 'ms'">
+        加载中...
     </div>
 </div>
 <script src="seed.js"></script>
 <style data-seed="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css"></style>
-<script data-seed="//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
+<script data-seed="//cdn.bootcss.com/jquery/3.0.0-alpha1/jquery.min.js"></script>
+<script data-seed="//cdn.bootcss.com/vue/1.0.14/vue.min.js"></script>
 <script>
+
+    // 开启后，不会存储；
+    Seed.data.debug = true;
 
     /**
      * 测试 map 方法；
@@ -54,13 +58,27 @@
         return result;
     };
 
-    var $ = {};
-    //
-    console.log( 'Seed之前：', $ );
+    var _s = new Date;
 
     Seed.scan( function () {
-        console.log( 'Seed之后：', $ );
+
+        var vm = new Vue( {
+            el  : '#vueRoot',
+            data: {
+                time: (new Date) - _s
+            }
+        } )
+
     } );
+
+    Seed.use(
+            '//cdn.bootcss.com/jquery/3.0.0-alpha1/jquery.min.js',
+            function () {
+                console.log( $ );
+            }
+    )
+
+
 </script>
 
 </body>

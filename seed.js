@@ -72,6 +72,13 @@
         }
     };
 
+    /**
+     * ajax get
+     * @param url
+     * @param success
+     * @param error
+     * @returns {XMLHttpRequest}
+     */
     function getFile( url, success, error ) {
 
         var xhr = new XMLHttpRequest();
@@ -92,10 +99,23 @@
         return xhr;
     }
 
+    /**
+     * ajax get error
+     * @param error
+     * @param type
+     * @param xhr
+     * @param callBack
+     */
     function getFileError( error, type, xhr, callBack ) {
         callBack && callBack( error, type, xhr );
     }
 
+    /**
+     * append url
+     * @param url
+     * @param query
+     * @returns {string}
+     */
     function appendQuery( url, query ) {
         return (query === '') ? url : (url + '&' + query).replace( /[&?]{1,2}/, '?' );
     }
@@ -109,7 +129,7 @@
     };
 
     var data = seed.data = {
-        debug: true
+        debug: false
     };
 
     data.base = win.location.origin;
@@ -134,6 +154,12 @@
     var cache        = seed.cache;
     var dependencies = {};
 
+    /**
+     * Seed.use
+     * @param ids
+     * @param callBack
+     * @returns {*}
+     */
     function use( ids, callBack ) {
 
         if ( !ids ) {
@@ -144,22 +170,27 @@
             callBack = noop();
         }
 
+        // 以引用对象（function）为 key
         var index = _queue.indexOf( callBack );
 
+        // 这个引用对象存在依赖
         if ( -1 === index ) {
             _queue.push( callBack );
             return use( ids, callBack );
         }
 
+        // 单文件
         if ( 'string' === typeof ids ) {
             ids = [ids];
         }
 
+        // 异常捕获
         if ( !Array.isArray( ids ) ) {
             console.warn( '[Seedjs can\'t resolve a non array parameter!]' );
             return seed;
         }
 
+        // 分析ID
         _parseIds( ids, index );
 
         // 由docker处理加载任务
@@ -167,6 +198,12 @@
         return seed;
     }
 
+    /**
+     * 分析ID
+     * @param ids
+     * @param index
+     * @private
+     */
     function _parseIds( ids, index ) {
         ids.forEach( function ( id ) {
 
@@ -178,7 +215,7 @@
 
             // 声明依赖关系
             if ( !cache[id] ) {
-                cache[id] = {
+                cache[id] = _parseHook( {
                     id          : id,
                     data        : null,
                     fileType    : fileType,
@@ -186,12 +223,10 @@
                     dependencies: [index],
                     status      : 'ready',
                     position    : doc.querySelector( '[data-seed="' + id + '"]' )
-                };
+                } );
             } else {
                 cache[id].dependencies.push( index );
             }
-
-            cache[id] = _parseHook( cache[id] );
 
             if ( !dependencies[index] ) {
                 dependencies[index] = {
@@ -206,6 +241,12 @@
         } );
     }
 
+    /**
+     * 获取文件 hook 标记
+     * @param item
+     * @returns {*}
+     * @private
+     */
     function _parseHook( item ) {
 
         function defaultMap( id ) {
@@ -252,7 +293,13 @@
         return item;
     }
 
+    /**
+     * 分发器
+     * @param ids
+     * @private
+     */
     function _docker( ids ) {
+        // copy 一份，然后再用，避免随着依赖的删除，导致执行出现错误；
         ids.slice( 0 ).forEach( function ( key ) {
             var item = cache[key];
 
@@ -261,19 +308,25 @@
                 return _emit( item );
             }
 
-            var codeString = localDataWorker.getItem( item.id );
-
-            // hook不同或者未存储,均ajax回掉通知
-            if ( (item.hook !== localDataWorker.getItem( item.id + '@hook' ))
-                || !codeString ) {
+            // hook不同 或 未存储 或开启debug模式, 均ajax回掉通知
+            if (
+                data.debug
+                || (item.hook !== localDataWorker.getItem( item.id + '@hook' ))
+                || !localDataWorker.getItem( item.id )
+            ) {
                 _fileLoad( item );
             } else {
-                item.data = codeString;
+                item.data = localDataWorker.getItem( item.id );
                 _emit( item );
             }
         } );
     }
 
+    /**
+     * 加载文件
+     * @param data
+     * @private
+     */
     function _fileLoad( data ) {
         if ( data.status === 'pending' ) {
             return;
@@ -283,14 +336,32 @@
             data.fileUrl,
             function ( ajaxCodeString ) {
                 data.data = ajaxCodeString;
-                localDataWorker.setItem( data.id + '@hook', data.hook );
-                localDataWorker.setItem( data.id, ajaxCodeString );
+                _store( data.id, data.hook, ajaxCodeString );
                 _emit( data );
             }
         );
     }
 
-    // 通知解除依赖
+
+    /**
+     * 存储到ls
+     * @param id
+     * @param hook
+     * @param data
+     * @private
+     */
+    function _store( id, hook, codeString ) {
+        if ( !data.debug ) {
+            localDataWorker.setItem( id + '@hook', hook );
+            localDataWorker.setItem( id, codeString );
+        }
+    }
+
+    /**
+     * 通知解除依赖
+     * @param data
+     * @private
+     */
     function _emit( data ) {
         data
             .dependencies
@@ -313,6 +384,12 @@
             } );
     }
 
+    /**
+     * 批量执行代码
+     * @param ids
+     * @param index
+     * @private
+     */
     function _execute( ids, index ) {
         ids.forEach( function ( item ) {
             _executeFileCode( cache[item] );
@@ -320,6 +397,11 @@
         _queue[index]();
     }
 
+    /**
+     * 单文件执行
+     * @param data
+     * @private
+     */
     function _executeFileCode( data ) {
 
         if ( data.status === 'loaded' ) {
@@ -364,6 +446,7 @@
         data.position = null;
     }
 
+    // bind to global;
     win.Seed = seed;
 
 })( window, document );
