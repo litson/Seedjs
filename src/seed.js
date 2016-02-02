@@ -72,14 +72,29 @@
         }
     };
 
+
     /**
-     * ajax get
+     *
      * @param url
      * @param success
      * @param error
-     * @returns {XMLHttpRequest}
+     * @param jsonpCallback
+     * @returns {*}
      */
-    function getFile( url, success, error ) {
+    function getFile( url, success, error, jsonpCallback ) {
+
+        if ( jsonpCallback ) {
+            return jsonPadding(
+                jsonpCallback,
+                url,
+                function ( data ) {
+                    success && success( data );
+                },
+                function () {
+                    getFileError();
+                }
+            );
+        }
 
         var xhr = new XMLHttpRequest();
         xhr.open( 'GET', appendQuery( url, ('_s_t_=' + (+new Date)) ), true );
@@ -110,6 +125,35 @@
         callBack && callBack( error, type, xhr );
     }
 
+    function jsonPadding( jsonpCallback, url, success, error ) {
+
+        var responseData;
+
+        window[jsonpCallback] = function () {
+            responseData = arguments;
+        };
+
+        var node   = doc.createElement( 'SCRIPT' );
+        var header = doc.head;
+
+        node.onload = node.onerror = function ( event ) {
+            (event.type === 'load') ? success( responseData[0] ) : error( event );
+            _clean( node );
+            node = null;
+        };
+
+        node.src = url;
+        header.insertBefore( node, header.firstChild );
+
+        function _clean( node ) {
+            node.onload = node.onerror = null;
+            for ( var p in node ) {
+                delete node[p];
+            }
+            header.removeChild( node );
+        }
+    }
+
     /**
      * append url
      * @param url
@@ -118,6 +162,17 @@
      */
     function appendQuery( url, query ) {
         return (query === '') ? url : (url + '&' + query).replace( /[&?]{1,2}/, '?' );
+    }
+
+    /**
+     * 打印一些警告
+     * @param messages
+     */
+    function warn( messages ) {
+        return console.warn.apply(
+            console,
+            ['[ Seed waring ]'].concat( Array.prototype.slice.call( arguments, 0 ) )
+        )
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -129,7 +184,8 @@
     };
 
     var data = seed.data = {
-        debug: false
+        debug: false,
+        jsonp: null
     };
 
     data.base = win.location.origin;
@@ -186,7 +242,7 @@
 
         // 异常捕获
         if ( !Array.isArray( ids ) ) {
-            console.warn( '[Seedjs can\'t resolve a non array parameter!]' );
+            warn( '[Seedjs can\'t resolve a non array parameter!]' );
             return seed;
         }
 
@@ -268,8 +324,7 @@
         var parsedData = map( item.id, defaultValue );
 
         if ( !parsedData || typeof parsedData !== 'object' ) {
-            console.warn(
-                '\n[ Seed Warning ]',
+            warn(
                 '\nYou may provide an incorrect \'map\' method!',
                 '\nThe \'map\' method expected return value is :\n',
                 JSON.stringify( {
@@ -327,19 +382,37 @@
      * @param data
      * @private
      */
-    function _fileLoad( data ) {
-        if ( data.status === 'pending' ) {
+    function _fileLoad( $data ) {
+        if ( $data.status === 'pending' ) {
             return;
         }
-        data.status = 'pending';
+        $data.status = 'pending';
         getFile(
-            data.fileUrl,
+            $data.fileUrl,
             function ( ajaxCodeString ) {
-                data.data = ajaxCodeString;
-                _store( data.id, data.hook, ajaxCodeString );
-                _emit( data );
-            }
+                _onGetFileLoad( $data, ajaxCodeString );
+            },
+            function () {
+                warn(
+                    'Some exception occurs when getting',
+                    $data.fileUrl
+                );
+                _onGetFileLoad( $data, '' );
+            },
+            data.jsonp
         );
+    }
+
+    /**
+     *
+     * @param data
+     * @param codeString
+     * @private
+     */
+    function _onGetFileLoad( data, codeString ) {
+        data.data = codeString;
+        _store( data.id, data.hook, codeString );
+        _emit( data );
     }
 
 
