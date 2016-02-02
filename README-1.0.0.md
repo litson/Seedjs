@@ -17,7 +17,7 @@ JavaScript library for seeding static files into localStorge.
   Seed.config({
         base: 'http://yourdomain.org',                        // Your domain
         // Tag some alias for your resources, you can setting an absoultly path into it.
-        alias: {                                              
+        alias: {
             zepto: 'http://cdn.somedomain.org/zepto.js',
             angularjs: '/static/js/angularjs.js',
             bootstrap: '/static/css/bootstrap.css'
@@ -46,7 +46,7 @@ JavaScript library for seeding static files into localStorge.
         , 'angularjs'
         , 'bootstrap'
         /* You can also setting some extra file. */
-        , 'path/to/some/file.js' 
+        , 'path/to/some/file.js'
       ]
       , callBack
   );
@@ -77,9 +77,9 @@ JavaScript library for seeding static files into localStorge.
  <script data-seed="/path/to/file.js"></script>
  <script>
     // Then 'path/to/file.js' can be preferred loaded.Another one 'path/to/file.css' will not be used twice.
-    Seed.scan(); 
+    Seed.scan();
  </script>
- 
+
 
 ```
 

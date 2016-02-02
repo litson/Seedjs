@@ -1,1 +1,0 @@
-_seedJsonp_( 'alert(1)' );
