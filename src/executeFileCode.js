@@ -1,3 +1,5 @@
+var CONFIG = require( './CONFIG' );
+
 module.exports = function ( data ) {
     if ( data.status === 'loaded' ) {
         return;
@@ -25,19 +27,16 @@ module.exports = function ( data ) {
     var node = data.position || document.createElement( temp.tagName );
 
     for ( var key in temp.props ) {
-        node.setAttribute(
-            key,
-            temp.props[key]
-        );
+        node[key] = temp.props[key];
     }
 
     if ( !data.position ) {
         document.head.appendChild( node );
     }
 
-    node.removeAttribute( 'data-seed' );
+    node.removeAttribute( 'data-' + CONFIG.delimiter );
     node.appendChild(
-        doc.createTextNode( data.data )
+        document.createTextNode( data.data )
     );
 
     data.data     = null;

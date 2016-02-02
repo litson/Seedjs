@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
     <title>Seed test bed.</title>
+    <style data-sd="//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"></style>
 </head>
 <body>
 <script src="../dist/seed.js"></script>
 <script>
+    Seed.data.delimiter = 'sd';
+    Seed.data.map = function () {
+    };
     Seed.scan();
 </script>
 </body>

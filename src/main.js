@@ -5,6 +5,8 @@ var doc = document;
 
 var localDataWorker = require( './localDataWorker' );
 
+var $ = require( './$' );
+
 var noop = require( './noop' );
 var warn = require( './warn' );
 
@@ -19,15 +21,12 @@ var seed = {
     use  : use
 };
 
-var data = seed.data = {
-    debug: false,
-    jsonp: null
-};
+var data = seed.data = require( './CONFIG' );
 
 data.base = win.location.origin;
 
 function scan( callBack ) {
-    var files = doc.querySelectorAll( '[data-seed]' );
+    var files = $( '[data-' + data.delimiter + ']' );
     var len   = files.length;
     var ids   = [];
 
@@ -36,7 +35,7 @@ function scan( callBack ) {
     }
 
     for ( var i = 0; i < len; i++ ) {
-        ids.push( files[i].dataset.seed );
+        ids.push( files[i].dataset[data.delimiter] );
     }
 
     return seed.use( ids, callBack );
@@ -111,10 +110,9 @@ function _parseIds( ids, index ) {
                 id          : id,
                 data        : null,
                 fileType    : fileType,
-                // 标记，该文件被传入的第N个回调依赖
                 dependencies: [index],
                 status      : 'ready',
-                position    : doc.querySelector( '[data-seed="' + id + '"]' )
+                position    : $( '[data-' + data.delimiter + '="' + id + '"]' )[0]
             } );
         } else {
             cache[id].dependencies.push( index );
@@ -123,7 +121,6 @@ function _parseIds( ids, index ) {
         if ( !dependencies[index] ) {
             dependencies[index] = {
                 ids : [id],
-                // 标记，该回调依赖哪些文件
                 deps: [id]
             }
         } else {
