@@ -1,6 +1,6 @@
 var ls = window.localStorage;
 
-module.exports = {
+var localDataWorker = {
     support: (function () {
         /**
          * 检测是否支持localStorage，
@@ -31,6 +31,7 @@ module.exports = {
                     support = false;
                 }
             }
+
             return support;
         }
 
@@ -47,11 +48,10 @@ module.exports = {
      * @returns {exports}
      */
     setItem: function ( key, value ) {
-        if ( this.support ) {
+        if ( localDataWorker.support ) {
             ls.setItem( key, value );
         }
         // else do cookie.
-        return this;
     },
 
     /**
@@ -60,6 +60,19 @@ module.exports = {
      * @returns {null}
      */
     getItem: function ( key ) {
-        return this.support ? ls.getItem( key ) : null;
+        return localDataWorker.support ? ls.getItem( key ) : null;
+    },
+
+    /**
+     *
+     * @param key
+     * @returns {*}
+     */
+    removeItem: function ( key ) {
+        if ( localDataWorker.support ) {
+            return key ? ls.removeItem( key ) : ls.clear()
+        }
     }
 };
+
+module.exports = localDataWorker;

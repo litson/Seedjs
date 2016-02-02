@@ -16,14 +16,15 @@ var getFile          = require( './getFile' );
 /////////////////////////////////////////////////////////////////////
 
 var seed = {
-    scan : scan,
-    cache: {},
-    use  : use
+    cache     : {},
+    scan      : scan,
+    use       : use,
+    removeItem: localDataWorker.removeItem,
+    setItem   : localDataWorker.setItem,
+    getItem   : localDataWorker.getItem
 };
 
 var data = seed.data = require( './CONFIG' );
-
-data.base = win.location.origin;
 
 function scan( callBack ) {
     var files = $( '[data-' + data.delimiter + ']' );
