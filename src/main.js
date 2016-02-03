@@ -1,17 +1,22 @@
+/**
+ * @file
+ * @fileoverview
+ * @authors      zhangtao23
+ * @date         2016/2/3
+ * @version      1.0.0
+ * @note
+ */
+
 'use strict';
+var $       = require( './$' );
+var win     = window;
+var noop    = require( './noop' );
+var warn    = require( './warn' );
+var getFile = require( './getFile' );
 
-var win = window;
-var doc = document;
-
-var localDataWorker = require( './localDataWorker' );
-
-var $ = require( './$' );
-
-var noop = require( './noop' );
-var warn = require( './warn' );
-
+var localDataWorker  = require( './localDataWorker' );
 var _executeFileCode = require( './executeFileCode' );
-var getFile          = require( './getFile' );
+
 
 /////////////////////////////////////////////////////////////////////
 
