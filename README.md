@@ -2,6 +2,8 @@
 
 可以将您的 `js` 、 `css` 文件在 `localStorage` 中管理。
 
+[文档：http://litson.github.io/archives/2016/test/index.html](http://litson.github.io/archives/2016/test/index.html#clear)
+
 ## 全局配置
 
 ### data.delimiter
