@@ -99,6 +99,8 @@ function use( ids, ready ) {
 function _parseIds( ids, index ) {
     ids.forEach( function ( id ) {
 
+        var originalId = id;
+
         if ( !/^\/\/.|:\//.test( id ) ) {
             id = data.base + id;
         }
@@ -113,7 +115,7 @@ function _parseIds( ids, index ) {
                 fileType    : fileType,
                 dependencies: [index],
                 status      : 'ready',
-                position    : $( '[data-' + data.delimiter + '="' + id + '"]' )[0]
+                position    : $( '[data-' + data.delimiter + '="' + originalId + '"]' )[0]
             } );
         } else {
             cache[id].dependencies.push( index );

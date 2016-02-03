@@ -77,7 +77,11 @@
 <script data-src="http://cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
 <script data-src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 <script src="../dist/seed.js"></script>
+<script data-src="/seedRequire.js"></script>
 <script>
+    /* global markdown */
+    /* global requirejs */
+
     (function () {
         if ( location.hash.indexOf( 'clear' ) !== -1 ) {
             Seed.removeItem();
@@ -85,14 +89,11 @@
             return;
         }
 
-        /* global markdown */
-
         // 调试模式开启，不会存储资源
-        Seed.data.debug = false;
+        // Seed.data.debug = true;
 
         Seed.data.base      = window.location.origin + '/GITHUB/Seedjs/test';
         Seed.data.delimiter = 'src';
-        // Seed.data.jsonp = 'define';
 
         //
         Seed.data.map = function ( url ) {
@@ -118,59 +119,10 @@
          * 资源加载完毕
          */
         Seed.scan( function () {
-
-            define( 'a', function () {
-                console.log( 1 );
+            requirejs.config( {
+                baseUrl: '/GITHUB/Seedjs/test/'
             } );
-
-
-            var documentString = Seed.getItem( 'documents' );
-
-            var $preview = $( '#preview' );
-            var $input   = $( '#input' );
-
-            if ( documentString ) {
-                bindInput( documentString )
-            } else {
-                $.ajax(
-                        {
-                            url    : '../README.md',
-                            success: function ( data ) {
-                                bindInput( data );
-                            }
-                        }
-                )
-            }
-
-            function bindInput( documentString ) {
-                $( '.wrapper' ).fadeIn();
-                $input.val( documentString );
-                $input.on( 'input', function () {
-                    var value = this.value;
-                    $preview.html(
-                            markdown.toHTML( value )
-                    );
-                    Seed.setItem( 'documents', value );
-                } ).trigger( 'input' );
-
-                $( '.close-input' ).on( 'click', function () {
-
-                    $( '.input' ).hide();
-                    $( 'footer' ).show();
-                    $preview.show();
-
-                } );
-
-                $( '#openEditor' ).on( 'click', function () {
-
-                    window.scrollTo( 0, 0 );
-
-                    $( '.input' ).show();
-                    $( 'footer' ).hide();
-                    $preview.hide();
-
-                } );
-            }
+            require( ['seedRequire!./a'] );
         } );
     })();
 </script>

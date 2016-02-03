@@ -1,1 +1,0 @@
-define( 'function foo() {alert( 1 );}' );
