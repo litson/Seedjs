@@ -1,5 +1,9 @@
 var CONFIG = require( './CONFIG' );
 
+/**
+ *
+ * @param data
+ */
 module.exports = function ( data ) {
     if ( data.status === 'loaded' ) {
         return;

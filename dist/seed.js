@@ -95,26 +95,26 @@
 	/**
 	 * Seed.use
 	 * @param ids
-	 * @param callBack
+	 * @param ready
 	 * @returns {*}
 	 */
-	function use( ids, callBack ) {
+	function use( ids, ready ) {
 
 	    if ( !ids ) {
 	        return seed;
 	    }
 
-	    if ( Object.prototype.toString.call( callBack ) !== '[object Function]' ) {
-	        callBack = noop();
+	    if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
+	        ready = noop();
 	    }
 
 	    // 以引用对象（function）为 key
-	    var index = _queue.indexOf( callBack );
+	    var index = _queue.indexOf( ready );
 
 	    // 这个引用对象存在依赖
 	    if ( -1 === index ) {
-	        _queue.push( callBack );
-	        return use( ids, callBack );
+	        _queue.push( ready );
+	        return use( ids, ready );
 	    }
 
 	    // 单文件
@@ -440,6 +440,11 @@
 /* 2 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @param selector
+	 * @returns {NodeList}
+	 */
 	module.exports = function ( selector ) {
 	    return document.querySelectorAll( selector );
 	};
@@ -448,6 +453,10 @@
 /* 3 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @returns {Function}
+	 */
 	module.exports = function () {
 	    return function () {
 	    };
@@ -457,6 +466,10 @@
 /* 4 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @param messages
+	 */
 	module.exports = function ( messages ) {
 	    return console.warn.apply(
 	        console,
@@ -470,6 +483,10 @@
 
 	var CONFIG = __webpack_require__( 6 );
 
+	/**
+	 * 
+	 * @param data
+	 */
 	module.exports = function ( data ) {
 	    if ( data.status === 'loaded' ) {
 	        return;
@@ -517,6 +534,10 @@
 /* 6 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @type {{base: (*|string), debug: boolean, jsonp: null, delimiter: string}}
+	 */
 	module.exports = {
 	    base     : window.location.origin,
 	    debug    : false,
@@ -531,6 +552,14 @@
 	var jsonPadding = __webpack_require__( 8 );
 	var ajax        = __webpack_require__( 9 );
 
+	/**
+	 *
+	 * @param url
+	 * @param success
+	 * @param error
+	 * @param jsonpCallback
+	 * @returns {XMLHttpRequest|*}
+	 */
 	module.exports = function ( url, success, error, jsonpCallback ) {
 	    return jsonpCallback
 	        ? jsonPadding(
@@ -550,14 +579,17 @@
 	    );
 	};
 
-
-
-
-
 /***/ },
 /* 8 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @param jsonpCallback
+	 * @param url
+	 * @param success
+	 * @param error
+	 */
 	module.exports = function ( jsonpCallback, url, success, error ) {
 
 	    var responseData;
@@ -570,7 +602,7 @@
 	    var header = document.head;
 
 	    node.onload = node.onerror = function ( event ) {
-	        (event.type === 'load') ? success( responseData[0] ) : error( event );
+	        (event.type === 'load') ? success( responseData[0].toString() ) : error( event );
 	        _clean( node );
 	        node = null;
 	    };
@@ -592,7 +624,15 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var appendQuery = __webpack_require__( 10 );
-	module.exports  = function ( url, success, error ) {
+
+	/**
+	 *
+	 * @param url
+	 * @param success
+	 * @param error
+	 * @returns {XMLHttpRequest}
+	 */
+	module.exports = function ( url, success, error ) {
 	    var xhr = new XMLHttpRequest();
 	    xhr.open( 'GET', appendQuery( url, ('_s_t_=' + (+new Date)) ), true );
 
@@ -615,9 +655,15 @@
 /* 10 */
 /***/ function(module, exports) {
 
+	/**
+	 *
+	 * @param url
+	 * @param query
+	 * @returns {string}
+	 */
 	module.exports = function ( url, query ) {
 	    return (query === '') ? url : (url + '&' + query).replace( /[&?]{1,2}/, '?' );
-	}
+	};
 
 /***/ }
 /******/ ]);

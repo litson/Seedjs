@@ -11,23 +11,17 @@
         }
 
         .wrapper {
-            margin: 50px 10%;
+            margin: 50px 1rem;
         }
 
         .input {
-            position: fixed;
-            width: 40%;
-            right: 10px;
+            position: relative;
             overflow: hidden;
             display: block;
-
-            border: 1px solid #ccc;
-            border-radius: 10px;
             padding: 1rem;
-
             background-color: #000;
-
             color: #fff;
+            margin-bottom: 1rem;
         }
 
         .input textarea {
@@ -36,101 +30,149 @@
             display: block;
             background-color: transparent;
             width: 100%;
-            min-height: 800px;
+            min-height: 480px;
             padding-bottom: 10rem;
         }
 
         #preview {
-            width: 60%;
-            min-height: 500px;
             padding-bottom: 10rem;
-            margin-right: 1rem;
+        }
 
-            float: left;
+        .close-input {
+            position: fixed;
+            top: 0;
+            right: 0;
+            display: block;
+            height: 50px;
+            width: 50px;
+
+            line-height: 50px;
+            text-align: center;
+
+            color: #fff;
         }
 
     </style>
 </head>
 <body>
 
+<div class="input" style="display: none">
+    <span class="close-input">关闭</span>
+    <textarea id="input" cols="30" rows="10"></textarea>
+</div>
+
 <div class="wrapper" style="display: none">
 
     <div id="preview"></div>
-
-    <div class="input">
-        <textarea id="input" cols="30" rows="10"></textarea>
-    </div>
-
+    <footer>
+        <p>本页采用Seedjs来做资源管理（Seedjs和 *MD框架无冲突，或者说是不同的东西），感兴趣的同学可以通过network面板查看网络情况。</p>
+        <p><a href="javascript:;" id="openEditor">启动 markdown 编辑</a></p>
+        <p>
+            <a href="https://github.com/litson/Seedjs">Github</a>
+        </p>
+    </footer>
 </div>
 
-
+<script data-src="//cdn.bootcss.com/require.js/2.1.22/require.js"></script>
 <script data-src="http://cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
 <script data-src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 <script src="../dist/seed.js"></script>
 <script>
+    (function () {
+        if ( location.hash.indexOf( 'clear' ) !== -1 ) {
+            Seed.removeItem();
+            location.href = location.href.replace( /#.*/g, '' );
+            return;
+        }
 
-    /* global markdown */
+        /* global markdown */
 
-    // 调试模式开启，不会存储资源
-    Seed.data.debug = false;
+        // 调试模式开启，不会存储资源
+        Seed.data.debug = false;
 
-    //
-    Seed.data.delimiter = 'src';
+        Seed.data.base      = window.location.origin + '/GITHUB/Seedjs/test';
+        Seed.data.delimiter = 'src';
+        // Seed.data.jsonp = 'define';
 
-    //
-    Seed.data.map = function ( url ) {
-        var datas  = url.match( /^(.*\/)(.*)$/i );
-        var result = {
-            id     : datas[2],
-            fileUrl: url,
-            hook   : datas[1]
+        //
+        Seed.data.map = function ( url ) {
+            var datas  = url.match( /^(.*\/)(.*)$/i );
+            var result = {
+                id     : datas[2],
+                fileUrl: url,
+                hook   : datas[1]
+            };
+            console.log(
+                    '\n',
+                    // 版本号处于地址之间的情况，demo输入如下，已文件名为id，hook采用文件名之前的所有
+                    JSON.stringify(
+                            result,
+                            null,
+                            4
+                    )
+            );
+            return result;
         };
-        console.log(
-                // 版本号处于地址之间的情况，demo输入如下，已文件名为id，hook采用文件名之前的所有
-                JSON.stringify(
-                        result,
-                        null,
-                        4
-                )
-        );
-        return result;
-    };
 
-    /**
-     * 资源加载完毕
-     */
-    Seed.scan( function () {
+        /**
+         * 资源加载完毕
+         */
+        Seed.scan( function () {
 
-        var documentString = Seed.getItem( 'documents' );
+            define( 'a', function () {
+                console.log( 1 );
+            } );
 
-        var $preview = $( '#preview' );
-        var $input   = $( '#input' );
 
-        if ( documentString ) {
-            bindInput( documentString )
-        } else {
-            $.ajax(
-                    {
-                        url    : '../README.md',
-                        success: function ( data ) {
-                            bindInput( data );
+            var documentString = Seed.getItem( 'documents' );
+
+            var $preview = $( '#preview' );
+            var $input   = $( '#input' );
+
+            if ( documentString ) {
+                bindInput( documentString )
+            } else {
+                $.ajax(
+                        {
+                            url    : '../README.md',
+                            success: function ( data ) {
+                                bindInput( data );
+                            }
                         }
-                    }
-            )
-        }
+                )
+            }
 
-        function bindInput( documentString ) {
-            $( '.wrapper' ).fadeIn();
-            $input.val( documentString );
-            $input.on( 'input', function () {
-                var value = this.value;
-                $preview.html(
-                        markdown.toHTML( value )
-                );
-                Seed.setItem( 'documents', value );
-            } ).trigger( 'input' );
-        }
-    } );
+            function bindInput( documentString ) {
+                $( '.wrapper' ).fadeIn();
+                $input.val( documentString );
+                $input.on( 'input', function () {
+                    var value = this.value;
+                    $preview.html(
+                            markdown.toHTML( value )
+                    );
+                    Seed.setItem( 'documents', value );
+                } ).trigger( 'input' );
+
+                $( '.close-input' ).on( 'click', function () {
+
+                    $( '.input' ).hide();
+                    $( 'footer' ).show();
+                    $preview.show();
+
+                } );
+
+                $( '#openEditor' ).on( 'click', function () {
+
+                    window.scrollTo( 0, 0 );
+
+                    $( '.input' ).show();
+                    $( 'footer' ).hide();
+                    $preview.hide();
+
+                } );
+            }
+        } );
+    })();
 </script>
 </body>
 </html>

@@ -13,8 +13,9 @@
 module.exports = {
     entry  : './src/main.js',
     output : {
-        path    : './dist/',
-        filename: 'seed.js'
+        path         : './dist/',
+        filename     : 'seed.js',
+        jsonpFunction: 'sp'
     },
     resolve: {
         extensions: ['', '.js', '.es6']

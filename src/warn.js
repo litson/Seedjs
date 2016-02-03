@@ -1,3 +1,7 @@
+/**
+ *
+ * @param messages
+ */
 module.exports = function ( messages ) {
     return console.warn.apply(
         console,

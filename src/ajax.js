@@ -1,5 +1,13 @@
 var appendQuery = require( './appendQuery' );
-module.exports  = function ( url, success, error ) {
+
+/**
+ *
+ * @param url
+ * @param success
+ * @param error
+ * @returns {XMLHttpRequest}
+ */
+module.exports = function ( url, success, error ) {
     var xhr = new XMLHttpRequest();
     xhr.open( 'GET', appendQuery( url, ('_s_t_=' + (+new Date)) ), true );
 

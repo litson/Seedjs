@@ -1,3 +1,10 @@
+/**
+ *
+ * @param jsonpCallback
+ * @param url
+ * @param success
+ * @param error
+ */
 module.exports = function ( jsonpCallback, url, success, error ) {
 
     var responseData;
@@ -10,7 +17,7 @@ module.exports = function ( jsonpCallback, url, success, error ) {
     var header = document.head;
 
     node.onload = node.onerror = function ( event ) {
-        (event.type === 'load') ? success( responseData[0] ) : error( event );
+        (event.type === 'load') ? success( responseData[0].toString() ) : error( event );
         _clean( node );
         node = null;
     };
