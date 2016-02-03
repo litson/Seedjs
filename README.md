@@ -213,3 +213,10 @@
         );
     
     ```
+    
+## TODO
+
+- requirejs 插件
+    - 支持将模块单个进行存储，思路是将 `define` 当做 `jsonpCallback` ，获得 `factory` 函数，然后将其整个 set 到 LS中。
+- modjs 支持
+    - 解决内需
