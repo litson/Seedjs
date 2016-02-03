@@ -1,13 +1,34 @@
-// defaultConfig Îª Seedjs ÎªÄú·ÖÎöºÃµÄ·µ»ØÖµ£¬¿É¹©²Î¿¼£¬»òÔÙÎŞĞè·ÖÎöµÄÊ±ºò¿ÉÖ±½Ó·µ»ØËû
+// defaultConfig ä¸º Seedjs ä¸ºæ‚¨åˆ†æå¥½çš„è¿”å›å€¼ï¼Œå¯ä¾›å‚è€ƒï¼Œæˆ–å†æ— éœ€åˆ†æçš„æ—¶å€™å¯ç›´æ¥è¿”å›ä»–
 Seed.data.map = function ( url, defaultConfig ) {
-    // ¸ù¾İ url ·ÖÎö³öÈçÏÂÊı¾İ½á¹¹
+    // æ ¹æ® url åˆ†æå‡ºå¦‚ä¸‹æ•°æ®ç»“æ„
 
     return {
-        id     : '½«»á±»´æ´¢µÄid',
-        hook   : 'ÊÇ·ñÓ¦¸Ã¸üĞÂµÄ±ê¼Ç',
-        fileUrl: 'Ô­Ê¼Â·¾¶'
+        id     : 'å°†ä¼šè¢«å­˜å‚¨çš„id',
+        hook   : 'æ˜¯å¦åº”è¯¥æ›´æ–°çš„æ ‡è®°',
+        fileUrl: 'åŸå§‹è·¯å¾„'
     }
 
-    // Èç¹ûÄÃ²»¶¨Ö÷Òâ£¬»òÕßÓĞĞ©Ğí×ÊÔ´ÎŞĞè·ÖÎö£¬¿ÉÒÔ·µ»Ø defaultConfig
+    // å¦‚æœæ‹¿ä¸å®šä¸»æ„ï¼Œæˆ–è€…æœ‰äº›è®¸èµ„æºæ— éœ€åˆ†æï¼Œå¯ä»¥è¿”å› defaultConfig
     return defaultConfig;
 }
+
+
+Seed.use(
+    [
+        '//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css',
+        '//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js'
+    ],
+    function () {
+        $( 'body' ).append(
+            '<div class="alert alert-warning"> bootstrapã€jQuery å‡†å¤‡å®Œæ¯•ã€‚ </div>'
+        )
+    }
+);
+
+Seed.scan(
+    function () {
+        $( 'body' ).append(
+            '<div class="alert alert-warning"> bootstrapã€jQuery å‡†å¤‡å®Œæ¯•ã€‚ </div>'
+        );
+    }
+);

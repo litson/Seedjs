@@ -49,26 +49,26 @@ var dependencies = {};
 /**
  * Seed.use
  * @param ids
- * @param callBack
+ * @param ready
  * @returns {*}
  */
-function use( ids, callBack ) {
+function use( ids, ready ) {
 
     if ( !ids ) {
         return seed;
     }
 
-    if ( Object.prototype.toString.call( callBack ) !== '[object Function]' ) {
-        callBack = noop();
+    if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
+        ready = noop();
     }
 
     // 以引用对象（function）为 key
-    var index = _queue.indexOf( callBack );
+    var index = _queue.indexOf( ready );
 
     // 这个引用对象存在依赖
     if ( -1 === index ) {
-        _queue.push( callBack );
-        return use( ids, callBack );
+        _queue.push( ready );
+        return use( ids, ready );
     }
 
     // 单文件

@@ -174,6 +174,12 @@
 
     ```
 
+    结果：
+
+    ```js
+        // output: '一些数据'
+    ```
+
 ### Seed.removeItem( key )
 
 - 参数：
@@ -186,12 +192,73 @@
 
     ```js
 
-        Seed.getItem( 'documents' );
+        Seed.removeItem( 'documents' );
+
+    ```
+
+### Seed.use( ids, ready )
+
+- 参数：
+    - `{String} ids | {Array} ids`
+    - `{Function} ready`
+- 用法：
+
+    `ready` 方法可选。
+
+    获取一个资源 `url` （或资源列表），来做存储&执行操作,
+
+    资源列表中某些资源若已在`localStorage`中，会自动跳过。
+
+    资源全部准备完毕后，执行 `ready` 方法。
+
+    ```js
+
+        Seed.use(
+            [
+                '//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css',
+                '//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js'
+            ],
+            function () {
+                $('body').append(
+                    '<div class="alert alert-warning"> bootstrap、jQuery 准备完毕。 </div>'
+                )
+            }
+        );
+
+    ```
+
+### Seed.scan( ready )
+
+- 参数：
+    - `{Function} ready`
+- 用法：
+
+    扫描 `DOM` 中 `data-[delimiter]` 标识的元素，获得资源列表，内容调用 `Seed.use` 。
+
+    该方法省去了手动在 `js` 中填写 资源列表的麻烦，也让页面中资源的依赖关系一目了然。
+
+    ```html
+
+        <style data-src="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"></style>
+        <script data-src="//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
+
+    ```
+
+    ```js
+
+        Seed.scan(
+            function () {
+                $( 'body' ).append(
+                    '<div class="alert alert-warning"> bootstrap、jQuery 准备完毕。 </div>'
+                );
+            }
+        );
 
     ```
 </textarea>
 <script src="../dist/seed.js"></script>
 <script>
+
     /* global markdown */
 
     Seed.data.debug = true;
