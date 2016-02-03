@@ -11,7 +11,9 @@
 - 用法：
 
     ```js
+    
         Seed.data.delimiter = 'src';
+        
     ```
 
     修改 dom 查找的界定符。
@@ -23,7 +25,9 @@
 - 用法：
 
     ```js
+    
         Seed.data.debug = true;
+        
     ```
 
     实时获取文件，并且文件不会存储到 `localStorage`中。
@@ -34,10 +38,12 @@
 - 类型： `String`
 - 默认值： `window.location.origin`
 - 用法：
-
+ 
    ```js
-     Seed.data.base = 'http://localhost:63342/GITHUB/Seedjs'
-   ```
+       
+        Seed.data.base = 'http://localhost:63342/GITHUB/Seedjs';
+           
+    ```
   
   文件路径查找的前缀。
 
@@ -51,7 +57,9 @@
 - 用法：
 
     ```js
+    
         Seed.data.jsonp = '_seedJsonp_';
+        
     ```
 
     `Seedjs` 拉取文件的方式为 `xhr` 拉取，但是需要对应的静态服务器开启 `CORS`。
@@ -65,6 +73,7 @@
 - 用法：
 
     ```js
+    
         // defaultConfig 为 Seedjs 为您分析好的返回值，可供参考，或再无需分析的时候可直接返回他
         Seed.data.map = function ( url, defaultConfig ) {
             // 根据 url 分析出如下数据结构
@@ -78,6 +87,7 @@
             // 如果拿不定主意，或者有些许资源无需分析，可以返回 defaultConfig
             return defaultConfig;
         }
+        
     ```
     
     该配置可对文件路径进行映射修改，可用于路径转换、在线调试等。
@@ -121,7 +131,9 @@
     结果：
     
     ```js
+    
         // output: '一些数据'
+        
     ```
     
 ### Seed.removeItem( key )
