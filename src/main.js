@@ -128,10 +128,10 @@ function _parseIds( ids, index ) {
             cache[id] = _parseHook( {
                 id          : id,
                 data        : null,
-                fileType    : fileType,
-                dependencies: [index],
                 status      : 'ready',
-                position    : $( '[data-' + data.delimiter + '="' + originalId + '"]' )[0]
+                fileType    : fileType,
+                position    : $( '[data-' + data.delimiter + '="' + originalId + '"]' )[0],
+                dependencies: [index]
             } );
         } else {
             cache[id].dependencies.push( index );

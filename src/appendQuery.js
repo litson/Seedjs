@@ -1,3 +1,5 @@
+var REG = require( './REG' );
+
 /**
  *
  * @param url
@@ -5,5 +7,5 @@
  * @returns {string}
  */
 module.exports = function ( url, query ) {
-    return (query === '') ? url : (url + '&' + query).replace( /[&?]{1,2}/, '?' );
+    return (query === '') ? url : (url + '&' + query).replace( REG.URL_OPERATOR, '?' );
 };

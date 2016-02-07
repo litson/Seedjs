@@ -9,7 +9,7 @@
 ### data.delimiter
 
 - 类型： `String`
-- 默认值： `"seed"`
+- 默认值： `seed`
 - 用法：
 
     ```js
@@ -70,7 +70,7 @@
 
 ### data.map
 
-- 类型： `String`
+- 类型： `Function`
 - 默认值： `null`
 - 用法：
 
@@ -95,6 +95,28 @@
     该配置可对文件路径进行映射修改，可用于路径转换、在线调试等。
     
 ## API
+
+### Seed.config( config )
+
+- 参数：
+    - `{Object} config`
+- 用法：
+    
+    再也不用挨个 `Seed.data` 设置了，可以使用 `config` 方法批量配置。
+    
+    ```js
+        
+        Seed.config(
+            {
+                base : '/res',
+                debug: true,
+                delimiter: 'src'
+            }
+        )
+    
+    ```
+    
+    乙未年，年三十新增。
 
 ### Seed.setItem( key, dataString )
 
