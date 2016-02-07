@@ -10,23 +10,25 @@
 'use strict';
 var $       = require( './$' );
 var win     = window;
+var REG     = require( './REG' );
 var noop    = require( './noop' );
 var warn    = require( './warn' );
 var getFile = require( './getFile' );
 
-var localDataWorker  = require( './localDataWorker' );
-var _executeFileCode = require( './executeFileCode' );
+var localDataWorker = require( './localDataWorker' );
+var executeFileCode = require( './executeFileCode' );
 
 
 /////////////////////////////////////////////////////////////////////
 
 var seed = {
-    cache     : {},
-    scan      : scan,
     use       : use,
-    removeItem: localDataWorker.removeItem,
+    scan      : scan,
+    cache     : {},
+    config    : require( './setConfig' ),
     setItem   : localDataWorker.setItem,
-    getItem   : localDataWorker.getItem
+    getItem   : localDataWorker.getItem,
+    removeItem: localDataWorker.removeItem
 };
 
 var data = seed.data = require( './CONFIG' );
@@ -63,6 +65,23 @@ function use( ids, ready ) {
         return seed;
     }
 
+    // 单文件
+    if ( 'string' === typeof ids ) {
+        ids = [ids];
+    }
+
+    // 异常捕获
+    if ( !Array.isArray( ids ) ) {
+        warn( 'Seedjs can\'t resolve a non array parameter!' );
+        return seed;
+    }
+
+    // 二次检测
+    if ( !ids.length ) {
+        warn( 'Are you provide an empty array?' );
+        return seed;
+    }
+
     if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
         ready = noop();
     }
@@ -76,16 +95,8 @@ function use( ids, ready ) {
         return use( ids, ready );
     }
 
-    // 单文件
-    if ( 'string' === typeof ids ) {
-        ids = [ids];
-    }
-
-    // 异常捕获
-    if ( !Array.isArray( ids ) ) {
-        warn( '[Seedjs can\'t resolve a non array parameter!]' );
-        return seed;
-    }
+    // 调试模式，清空 LS
+    data.debug && localDataWorker.removeItem();
 
     // 分析ID
     _parseIds( ids, index );
@@ -106,11 +117,11 @@ function _parseIds( ids, index ) {
 
         var originalId = id;
 
-        if ( !/^\/\/.|:\//.test( id ) ) {
+        if ( !REG.ABSOLUTE.test( id ) ) {
             id = data.base + id;
         }
 
-        var fileType = /\.css(?:\?|$)/i.test( id ) ? 'css' : 'js';
+        var fileType = REG.IS_CSS.test( id ) ? 'css' : 'js';
 
         // 声明依赖关系
         if ( !cache[id] ) {
@@ -147,7 +158,7 @@ function _parseIds( ids, index ) {
 function _parseHook( item ) {
 
     function defaultMap( id ) {
-        var datas = id.match( /^(.*\.(?:css|js))(.*)$/i );
+        var datas = id.match( REG.PARAM );
         return {
             id     : datas[1],
             fileUrl: id,
@@ -306,7 +317,7 @@ function _emit( data ) {
  */
 function _execute( ids, index ) {
     ids.forEach( function ( item ) {
-        _executeFileCode( cache[item] );
+        executeFileCode( cache[item] );
     } );
     _queue[index]();
 }

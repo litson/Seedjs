@@ -17,7 +17,7 @@ module.exports = function ( jsonpCallback, url, success, error ) {
     var header = document.head;
 
     node.onload = node.onerror = function ( event ) {
-        (event.type === 'load') ? success( responseData[0].toString() ) : error( event );
+        (event.type === 'load') ? success.apply( null, responseData ) : error( event );
         _clean( node );
         node = null;
     };

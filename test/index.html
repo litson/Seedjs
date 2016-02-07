@@ -89,31 +89,33 @@
             return;
         }
 
-        // 调试模式开启，不会存储资源
-        // Seed.data.debug = true;
+        Seed.config( {
+            //jsonp:'aaa',
+            // 调试模式开启，不会存储资源
+            // debug: true,
+            base: '/GITHUB/Seedjs/test',
+//            map : function ( url ) {
+//
+//                var datas  = url.match( /^(.*\/)(.*)$/i );
+//                var result = {
+//                    id     : datas[2],
+//                    fileUrl: url,
+//                    hook   : datas[1]
+//                };
+//                console.log(
+//                        '\n',
+//                        // 版本号处于地址之间的情况，demo输入如下，已文件名为id，hook采用文件名之前的所有
+//                        JSON.stringify(
+//                                result,
+//                                null,
+//                                4
+//                        )
+//                );
+//                return result;
+//            },
 
-        Seed.data.base      = window.location.origin + '/GITHUB/Seedjs/test';
-        Seed.data.delimiter = 'src';
-
-        //
-        Seed.data.map = function ( url ) {
-            var datas  = url.match( /^(.*\/)(.*)$/i );
-            var result = {
-                id     : datas[2],
-                fileUrl: url,
-                hook   : datas[1]
-            };
-            console.log(
-                    '\n',
-                    // 版本号处于地址之间的情况，demo输入如下，已文件名为id，hook采用文件名之前的所有
-                    JSON.stringify(
-                            result,
-                            null,
-                            4
-                    )
-            );
-            return result;
-        };
+            delimiter: 'src'
+        } );
 
         /**
          * 资源加载完毕
@@ -124,6 +126,23 @@
             } );
             require( ['seedRequire!./a'] );
         } );
+
+        var fileList = [];
+
+//        for ( var i = 0; i < 10; i++ ) {
+//            fileList.push(
+//                    '//cdn.bootcss.com/vue/1.0.' + i + '/vue.js'
+//            )
+//        }
+
+        Seed.use(
+                fileList,
+                function () {
+                    console.log( '压测' );
+                }
+        )
+
+
     })();
 </script>
 </body>
