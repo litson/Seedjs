@@ -9,7 +9,7 @@ define( 'a', function ( require, exports ) {
     } else {
         $.ajax(
             {
-                url    : '../README.md',
+                url    : 'https://raw.githubusercontent.com/litson/Seedjs/master/README.md',
                 success: function ( data ) {
                     bindInput( data );
                 }

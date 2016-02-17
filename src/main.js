@@ -21,91 +21,114 @@ var executeFileCode = require( './executeFileCode' );
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * 缓存配置
+ * @type {{}}
+ */
+var data = require( './CONFIG' );
+
+/**
+ * 缓存文件“实例”
+ * @type {{}}
+ */
+var cache = {};
+
+/**
+ * 执行队列
+ * @type {Array}
+ * @private
+ */
+var _queue = [];
+
+/**
+ * 依赖关系表
+ * @type {{}}
+ */
+var dependencies = {};
+
 var seed = {
-    use       : use,
-    scan      : scan,
-    data      : require( './CONFIG' ),
-    cache     : {},
+
+    /**
+     *
+     * @param ids
+     * @param ready
+     * @returns {*}
+     */
+    use: function ( ids, ready ) {
+
+        if ( !ids ) {
+            return this;
+        }
+
+        // 单文件
+        if ( 'string' === typeof ids ) {
+            ids = [ids];
+        }
+
+        // 异常捕获
+        if ( !Array.isArray( ids ) ) {
+            warn( 'Seedjs can\'t resolve a non array parameter!' );
+            return this;
+        }
+
+        // 二次检测
+        if ( !ids.length ) {
+            warn( 'Did you provide an empty array?' );
+            return this;
+        }
+
+        if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
+            ready = noop();
+        }
+
+        // 以引用对象（function）为 key
+        var index = _queue.indexOf( ready );
+
+        // 这个引用对象存在依赖
+        if ( -1 === index ) {
+            _queue.push( ready );
+            return this.use( ids, ready );
+        }
+
+        // 调试模式，清空 LS
+        data.debug && localDataWorker.removeItem();
+
+        // 分析ID
+        _parseIds( ids, index );
+
+        // 由docker处理加载任务
+        _docker( dependencies[index].deps );
+        return this;
+    },
+
+    /**
+     *
+     * @param ready
+     * @returns {*}
+     */
+    scan: function ( ready ) {
+        var files = $( '[data-' + data.delimiter + ']' );
+        var len   = files.length;
+        var ids   = [];
+
+        if ( !len ) {
+            return this;
+        }
+
+        for ( var i = 0; i < len; i++ ) {
+            ids.push( files[i].dataset[data.delimiter] );
+        }
+
+        return this.use( ids, ready );
+    },
+
+    data      : data,
+    cache     : cache,
     config    : require( './setConfig' ),
     setItem   : localDataWorker.setItem,
     getItem   : localDataWorker.getItem,
     removeItem: localDataWorker.removeItem
 };
-
-var data = seed.data;
-
-function scan( callBack ) {
-    var files = $( '[data-' + data.delimiter + ']' );
-    var len   = files.length;
-    var ids   = [];
-
-    if ( !len ) {
-        return seed;
-    }
-
-    for ( var i = 0; i < len; i++ ) {
-        ids.push( files[i].dataset[data.delimiter] );
-    }
-
-    return seed.use( ids, callBack );
-}
-
-var _queue       = [];
-var cache        = seed.cache;
-var dependencies = {};
-
-/**
- * Seed.use
- * @param ids
- * @param ready
- * @returns {*}
- */
-function use( ids, ready ) {
-
-    if ( !ids ) {
-        return seed;
-    }
-
-    // 单文件
-    if ( 'string' === typeof ids ) {
-        ids = [ids];
-    }
-
-    // 异常捕获
-    if ( !Array.isArray( ids ) ) {
-        warn( 'Seedjs can\'t resolve a non array parameter!' );
-        return seed;
-    }
-
-    // 二次检测
-    if ( !ids.length ) {
-        warn( 'Are you provide an empty array?' );
-        return seed;
-    }
-
-    if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
-        ready = noop();
-    }
-
-    // 以引用对象（function）为 key
-    var index = _queue.indexOf( ready );
-
-    // 这个引用对象存在依赖
-    if ( -1 === index ) {
-        _queue.push( ready );
-        return use( ids, ready );
-    }
-
-    // 调试模式，清空 LS
-    data.debug && localDataWorker.removeItem();
-
-    // 分析ID
-    _parseIds( ids, index );
-
-    // 由docker处理加载任务
-    _docker( dependencies[index].deps );
-    return seed;
-}
 
 /**
  * 分析ID
