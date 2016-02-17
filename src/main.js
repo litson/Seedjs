@@ -346,5 +346,4 @@ function _execute( ids, index ) {
     _queue[index]();
 }
 
-// bind to global;
-win.Seed = seed;
+module.exports = seed;

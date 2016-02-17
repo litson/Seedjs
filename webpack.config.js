@@ -15,6 +15,8 @@ module.exports = {
     output : {
         path         : './dist/',
         filename     : 'seed.js',
+        library      : 'Seed',
+        libraryTarget: 'umd',
         jsonpFunction: 'sp'
     },
     resolve: {
