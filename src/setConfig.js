@@ -1,10 +1,12 @@
 var data = require( './CONFIG' );
 
 module.exports = function ( setting ) {
-    var key;
+    
     var k;
+    var key;
     var curr;
     var prev;
+
     for ( key in setting ) {
         curr = setting[key];
         prev = data[key];

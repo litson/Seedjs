@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #wrapper {
+            width: 80%;
+            margin: 20px auto;
+            display: block;
+        }
+
+        #wrapper img {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper">
+
+</div>
+<script>
+    // 'http://m5.lelemh.com/UploadFiles/8062/第09话_0002.png'
+    // 'http://m6.lelemh.com/UploadFiles/8062/第11话_0001.jpg'
+    // 'http://m6.lelemh.com/UploadFiles/8062/第11话_0001.jpg'
+    // http://104.237.55.122:9393/dm10//ok-comic10/Z/23481/act_015/z_0001_31986.JPG
+    // http://104.237.55.122:9393/dm10//ok-comic10/Z/23481/act_015/z_0002_99380.JPG
+    var url = 'http://m5.lelemh.com/UploadFiles/8062/第08话_0001.jpg'
+
+    var html = '';
+
+    var page = '16';
+
+    var ext = 'jpg';
+
+    for ( var i = 0; i < 100; i++ ) {
+        html += '<img src="http://m6.lelemh.com/UploadFiles/8062/第' + page + '话_00' + (function ( index ) {
+                    if ( index < 10 ) {
+                        return '0' + index;
+                    }
+                    return index;
+                })( i ) + '.' + ext + '"/>';
+    }
+
+
+    document.getElementById(
+            'wrapper'
+    ).innerHTML = html;
+
+
+</script>
+</body>
+</html>

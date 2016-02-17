@@ -24,6 +24,7 @@ var executeFileCode = require( './executeFileCode' );
 var seed = {
     use       : use,
     scan      : scan,
+    data      : require( './CONFIG' ),
     cache     : {},
     config    : require( './setConfig' ),
     setItem   : localDataWorker.setItem,
@@ -31,7 +32,7 @@ var seed = {
     removeItem: localDataWorker.removeItem
 };
 
-var data = seed.data = require( './CONFIG' );
+var data = seed.data;
 
 function scan( callBack ) {
     var files = $( '[data-' + data.delimiter + ']' );

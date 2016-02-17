@@ -213,7 +213,7 @@
     - `{Function} ready`
 - 用法：
 
-    扫描 `DOM` 中 `data-[delimiter]` 标识的元素，获得资源列表，内容调用 `Seed.use` 。
+    扫描 `DOM` 中 `data-[delimiter]` 标识的元素，获得资源列表，内部调用 `Seed.use` 。
     
     该方法省去了手动在 `js` 中填写 资源列表的麻烦，也让页面中资源的依赖关系一目了然。
     

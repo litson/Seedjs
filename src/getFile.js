@@ -14,12 +14,8 @@ module.exports = function ( url, success, error, jsonpCallback ) {
         ? jsonPadding(
         jsonpCallback,
         url,
-        function ( data ) {
-            success && success( data );
-        },
-        function () {
-            error && error();
-        }
+        success,
+        error
     )
         : ajax(
         url,
