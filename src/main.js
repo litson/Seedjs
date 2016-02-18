@@ -112,7 +112,7 @@ var seed = {
         }
 
         // 采用引用对象Function来做key，保证唯一性（反其道而行）
-        if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
+        if ( {}.toString.call( ready ) !== '[object Function]' ) {
             ready = noop();
         }
 
@@ -200,6 +200,7 @@ var seed = {
 /**
  * 分析ID
  *
+ *
  * @param {Array} ids 文件对象id集合
  * @param {Number} index 依赖回调的索引
  * @private
@@ -211,10 +212,7 @@ function _parseIds( ids, index ) {
         // @type {String} 文件的元素id
         var originalId = id;
 
-        // 非绝对路径加配置前缀
-        if ( !REG.ABSOLUTE.test( id ) ) {
-            id = data.base + id;
-        }
+        id = resolveId( id );
 
         // @type {String} 分析文件类型
         var fileType = REG.IS_CSS.test( id ) ? 'css' : 'js';
@@ -273,6 +271,29 @@ function _parseIds( ids, index ) {
             dependencies[index].deps.push( id );
         }
     } );
+}
+
+function resolveId( id ) {
+
+    var first = id.charCodeAt( 0 );
+
+    // 非绝对路径或点杠开头的加前缀加配置前缀
+    if (
+        !REG.ABSOLUTE.test( id )
+        && (
+            first !== 46 /* "." */
+            && first !== 47 /* "/" */
+        )
+    ) {
+        id = data.base + id;
+    }
+
+    // 当 uri为 // 开头，加上协议
+    if ( id.indexOf( "//" ) === 0 ) {
+        id = location.protocol + id;
+    }
+
+    return id;
 }
 
 /**
