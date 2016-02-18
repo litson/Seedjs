@@ -1,6 +1,9 @@
 /**
  * @file
  * @fileoverview
+ *              可以将您的 js 、 css 文件在 localStorage 中管理的库。
+ *              Document：https://github.com/litson/Seedjs/blob/master/README.md
+ *
  * @authors      zhangtao23
  * @date         2016/2/3
  * @version      1.0.0
@@ -21,19 +24,22 @@ var executeFileCode = require( './executeFileCode' );
 /////////////////////////////////////////////////////////////////////
 
 /**
- * 缓存配置
- * @type {{}}
+ * 基本配置
+ *
+ * @type {Object}
  */
 var data = require( './CONFIG' );
 
 /**
  * 缓存文件“实例”
- * @type {{}}
+ *
+ * @type {Object}
  */
 var cache = {};
 
 /**
  * 执行队列
+ *
  * @type {Array}
  * @private
  */
@@ -41,10 +47,15 @@ var _queue = [];
 
 /**
  * 依赖关系表
- * @type {{}}
+ * @type {Object}
  */
 var dependencies = {};
 
+/**
+ * 导出主体
+ *
+ * @type {Object}
+ */
 var seed = {
 
     /**
@@ -131,23 +142,30 @@ var seed = {
 
 /**
  * 分析ID
- * @param ids
- * @param index
+ *
+ * @param {Array} ids 文件对象id集合
+ * @param {Number} index 依赖回调的索引
  * @private
  */
 function _parseIds( ids, index ) {
+
     ids.forEach( function ( id ) {
 
+        // @type {String} 文件的元素id
         var originalId = id;
 
+        // 非绝对路径加配置前缀
         if ( !REG.ABSOLUTE.test( id ) ) {
             id = data.base + id;
         }
 
+        // @type {String} 分析文件类型
         var fileType = REG.IS_CSS.test( id ) ? 'css' : 'js';
 
         // 声明依赖关系
         if ( !cache[id] ) {
+
+            // 分析文件对象
             cache[id] = _parseHook( {
                 id          : id,
                 data        : null,
@@ -156,16 +174,44 @@ function _parseIds( ids, index ) {
                 position    : $( '[data-' + data.delimiter + '="' + originalId + '"]' )[0],
                 dependencies: [index]
             } );
+
+            /*
+             * 在 cache 中的文件对象示例：
+             *  {
+             *      "http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css": {
+             *          // id
+             *          "id"          : "http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css",
+             *          // 文件内容，执行完毕后会清空
+             *          "data"        : null,
+             *          // 加载状态
+             *          "status"      : "loaded",
+             *          // 文件类型
+             *          "fileType"    : "css",
+             *          // 文件应处的位置
+             *          "position"    : null,
+             *          // 文件的依赖
+             *          "dependencies": [],
+             *          // 更新tag
+             *          "hook"        : "__seed_version__",
+             *          // 文件的地址
+             *          "fileUrl"     : "http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"
+             *      }
+             *  }
+             */
+
         } else {
+            // 如果之前已经有缓存过，下次则将其依赖set到依赖队列中
             cache[id].dependencies.push( index );
         }
 
+        // 声明依赖队列
         if ( !dependencies[index] ) {
             dependencies[index] = {
                 ids : [id],
                 deps: [id]
             }
         } else {
+            // 同理，如果存在依赖，则继续set到队列中
             dependencies[index].ids.push( id );
             dependencies[index].deps.push( id );
         }
@@ -174,30 +220,27 @@ function _parseIds( ids, index ) {
 
 /**
  * 获取文件 hook 标记
- * @param item
- * @returns {*}
+ *
+ * @param {Object} item 文件对象
+ * @returns {Object} 修正后的文件对象
  * @private
  */
 function _parseHook( item ) {
 
-    function defaultMap( id ) {
-        var datas = id.match( REG.PARAM );
-        return {
-            id     : datas[1],
-            fileUrl: id,
-            hook   : datas[2] || '__seed_version__'
-        }
-    }
-
+    // @type {Object} 一份默认的配置表
     var defaultValue = {
         id     : item.id,
         fileUrl: item.id,
         hook   : '__seed_version__'
     };
 
-    var map        = data.map || defaultMap;
+    // @type {Function} 如果提供了map方法，就启用用户使用的map方法
+    var map = data.map || defaultMap;
+
+    // @type {Object} 通过map方法分析
     var parsedData = map( item.id, defaultValue );
 
+    // 分析失败或任何异常，发出警告。降级为启用默认配置.
     if ( !parsedData || typeof parsedData !== 'object' ) {
         warn(
             '\nYou may provide an incorrect \'map\' method!',
@@ -216,29 +259,54 @@ function _parseHook( item ) {
         parsedData = defaultValue;
     }
 
+    // 赋值
     item.id      = parsedData.id;
     item.hook    = parsedData.hook;
     item.fileUrl = parsedData.fileUrl;
 
     return item;
+
+
+    /**
+     * 默认的map函数，用来分析文件对象.
+     *
+     * @param {String} id 文件对象的url
+     * @returns {Object} 分析后的文件对象
+     */
+    function defaultMap( id ) {
+        var datas = id.match( REG.PARAM );
+
+        // 将一个文件url拆分为：
+        return {
+            // 存储的id
+            id     : datas[1],
+            // 文件路径（非原始）
+            fileUrl: id,
+            // 更新的tag
+            hook   : datas[2] || '__seed_version__'
+        }
+    }
+
 }
 
 /**
  * 分发器
- * @param ids
+ *
+ * @param {Array} ids 文件对象的id集合
  * @private
  */
 function _docker( ids ) {
+
     // copy 一份，然后再用，避免随着依赖的删除，导致执行出现错误；
     ids.slice( 0 ).forEach( function ( key ) {
         var item = cache[key];
 
-        // 如果已经加载完毕的模块
+        // 如果已经加载完毕的模块，则通知解除依赖关系
         if ( item.status === 'loaded' ) {
             return _emit( item );
         }
 
-        // hook不同 或 未存储 或开启debug模式, 均ajax回掉通知
+        // hook不同 或 未存储 或开启debug模式, 均异步获取文件回掉通知
         if (
             data.debug
             || (item.hook !== localDataWorker.getItem( item.id + '@hook' ))
@@ -246,27 +314,41 @@ function _docker( ids ) {
         ) {
             _fileLoad( item );
         } else {
+            // 否则从本地获取
             item.data = localDataWorker.getItem( item.id );
+            // 通知解除依赖关系
             _emit( item );
         }
     } );
 }
 
 /**
- * 加载文件
- * @param data
+ * 获取文件数据
+ *
+ * @param {Object} $data 传递的文件对象
  * @private
  */
 function _fileLoad( $data ) {
+
+    // 锁
     if ( $data.status === 'pending' ) {
         return;
     }
+
+    // 加锁
     $data.status = 'pending';
+
+    // 获取文件
     getFile(
+        // 文件地址
         $data.fileUrl,
+
+        // 成功回调
         function ( ajaxCodeString ) {
             _onGetFileLoad( $data, ajaxCodeString );
         },
+
+        // 失败回调
         function () {
             warn(
                 'Some exception occurs when getting',
@@ -274,31 +356,42 @@ function _fileLoad( $data ) {
             );
             _onGetFileLoad( $data, '' );
         },
+
+        // 传递全局配置的jsonp关键字
+        // TODO: 单文件支持配置jsonp
         data.jsonp
     );
 }
 
 /**
+ * 异步获取数据后的回调
  *
- * @param data
- * @param codeString
+ * @param {Object} data 文件对象
+ * @param {String} codeString 存储的数据
  * @private
  */
 function _onGetFileLoad( data, codeString ) {
+    // 数据赋值
     data.data = codeString;
+
+    // 存储到ls中
     _store( data.id, data.hook, codeString );
+
+    // 通知删除依赖
     _emit( data );
 }
 
 
 /**
- * 存储到ls
- * @param id
- * @param hook
- * @param data
+ * 存储到ls中
+ * @param {String} id 存储的id
+ * @param {String} hook 更新标记hook值
+ * @param {String} codeString 存储的数据
  * @private
  */
 function _store( id, hook, codeString ) {
+
+    // 如果开启了调试，则不执行存储操作
     if ( !data.debug ) {
         localDataWorker.setItem( id + '@hook', hook );
         localDataWorker.setItem( id, codeString );
@@ -307,10 +400,13 @@ function _store( id, hook, codeString ) {
 
 /**
  * 通知解除依赖
- * @param data
+ *
+ * @param {Object} data 文件对象
  * @private
  */
 function _emit( data ) {
+
+    // 复制一份，避免应用对象冲突
     data
         .dependencies
         .slice( 0 )
@@ -318,14 +414,17 @@ function _emit( data ) {
 
             var globalDeps = dependencies[index];
 
+            // 删除全局依赖
             globalDeps.deps.splice(
                 globalDeps.deps.indexOf( data.id ), 1
             );
 
+            // 删除文件对象依赖
             data.dependencies.splice(
                 data.dependencies.indexOf( index ), 1
             );
 
+            // 检测依赖表数量，为空时执行代码
             if ( globalDeps.deps.length === 0 ) {
                 _execute( globalDeps.ids, index );
             }
@@ -334,8 +433,8 @@ function _emit( data ) {
 
 /**
  * 批量执行代码
- * @param ids
- * @param index
+ * @param {Array} ids 传递的文件对象集合
+ * @param {Number} index 依赖中的对应索引
  * @private
  */
 function _execute( ids, index ) {

@@ -54,11 +54,13 @@ module.exports = function ( data ) {
         doc.head.appendChild( node );
     }
 
-    // 一些清理工作
+    // 干掉标记
     node.removeAttribute( 'data-' + CONFIG.delimiter );
-    data.data     = null;
-    data.position = null;
 
     // 执行代码；PS：innerHTML,超过一定行数会报错。
     node.appendChild( doc.createTextNode( data.data ) );
+
+    // 一些清理工作
+    data.data     = null;
+    data.position = null;
 };
