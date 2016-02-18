@@ -1,24 +1,36 @@
 var ls = window.localStorage;
 
+/**
+ * 本地存储操作
+ *
+ * PS: 原有cookie的降级
+ *
+ * @type {Object}
+ */
 var localDataWorker = {
+
+    // @type {Boolean} 是否支持
     support: (function () {
+
         /**
          * 检测是否支持localStorage，
          * 有如下几种情况：
          *      1、不支持；
          *      2、隐私模式；
          *      3、写满了；
-         * @param cb
-         * @returns {boolean}
+         * @param {Function} cb 二次检测回调
+         * @returns {Boolean} 是否支持
          * @private
          */
         function _support( cb ) {
             var support = true;
             try {
+
                 // 尝试通过读写检测
                 ls.setItem( '__seed_test__', 1 );
                 ls.removeItem( '__seed_test__' );
             } catch ( e ) {
+
                 // 发生异常后，交给cb操作
                 if ( cb ) {
                     try {
@@ -27,6 +39,7 @@ var localDataWorker = {
                         support = false;
                     }
                 } else {
+
                     // 读写失败后
                     support = false;
                 }
@@ -44,11 +57,9 @@ var localDataWorker = {
 
     /**
      * 写
-     * TODO:
-     *      Else do cookie.
-     * @param key
-     * @param value
-     * @returns {exports}
+     *
+     * @param {String} key 键
+     * @param {String} value 值
      */
     setItem: function ( key, value ) {
         localDataWorker.support && ls.setItem( key, value );
@@ -56,17 +67,18 @@ var localDataWorker = {
 
     /**
      * 读
-     * @param key
-     * @returns {null}
+     * @param {String} key 键
+     * @returns {String | Null} 返回值
      */
     getItem: function ( key ) {
         return localDataWorker.support ? ls.getItem( key ) : null;
     },
 
     /**
-     * 移除 | 情况
-     * @param key
-     * @returns {*}
+     * 移除 | 清空
+     *
+     * 有参数key，则尝试删除该项，无则全部清空
+     * @param {String} key 键
      */
     removeItem: function ( key ) {
         localDataWorker.support

@@ -1,9 +1,15 @@
 /**
  *
- * @param jsonpCallback
- * @param url
- * @param success
- * @param error
+ * 简单的jsonp函数
+ *
+ * TODO:
+ *
+ *   jsonpCallback 的无污染
+ *
+ * @param {String} jsonpCallback 注册的全局函数句柄
+ * @param {String} url 资源地址
+ * @param {Function} success 成功回调
+ * @param {Function} error 失败回调
  */
 module.exports = function ( jsonpCallback, url, success, error ) {
 

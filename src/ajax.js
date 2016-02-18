@@ -1,10 +1,10 @@
 var appendQuery = require( './appendQuery' );
 
 /**
- * get 方法
- * @param url 地址
- * @param success 成功回调
- * @param error   失败回调
+ * ajax get 方法
+ * @param {String} url 地址
+ * @param {Function} success 成功回调
+ * @param {Function} error 失败回调
  */
 module.exports = function ( url, success, error ) {
     var xhr = new XMLHttpRequest();
