@@ -1,11 +1,10 @@
 var appendQuery = require( './appendQuery' );
 
 /**
- *
- * @param url
- * @param success
- * @param error
- * @returns {XMLHttpRequest}
+ * get 方法
+ * @param url 地址
+ * @param success 成功回调
+ * @param error   失败回调
  */
 module.exports = function ( url, success, error ) {
     var xhr = new XMLHttpRequest();
@@ -14,14 +13,10 @@ module.exports = function ( url, success, error ) {
     xhr.onreadystatechange = function () {
         if ( xhr.readyState === 4 ) {
             xhr.onreadystatechange = null;
-            if ( (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 ) {
-                success && success( xhr.responseText, xhr );
-            } else {
-                error && error();
-            }
+            ( (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 )
+                ? success( xhr.responseText )
+                : error();
         }
     };
-
     xhr.send( null );
-    return xhr;
 };

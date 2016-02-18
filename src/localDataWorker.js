@@ -35,6 +35,7 @@ var localDataWorker = {
             return support;
         }
 
+        // 递归校验，第一次如果发生异常，尝试清除ls后再次检测
         return _support( function () {
             ls.clear();
             return _support();
@@ -43,15 +44,14 @@ var localDataWorker = {
 
     /**
      * 写
+     * TODO:
+     *      Else do cookie.
      * @param key
      * @param value
      * @returns {exports}
      */
     setItem: function ( key, value ) {
-        if ( localDataWorker.support ) {
-            ls.setItem( key, value );
-        }
-        // else do cookie.
+        localDataWorker.support && ls.setItem( key, value );
     },
 
     /**
@@ -64,14 +64,17 @@ var localDataWorker = {
     },
 
     /**
-     *
+     * 移除 | 情况
      * @param key
      * @returns {*}
      */
     removeItem: function ( key ) {
-        if ( localDataWorker.support ) {
-            return key ? ls.removeItem( key ) : ls.clear()
-        }
+        localDataWorker.support
+        && (
+            key
+                ? ls.removeItem( key )
+                : ls.clear()
+        );
     }
 };
 

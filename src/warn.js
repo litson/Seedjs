@@ -1,5 +1,5 @@
 /**
- *
+ * 打印一些警告
  * @param messages
  */
 module.exports = function ( messages ) {

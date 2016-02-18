@@ -10,7 +10,7 @@ var ajax        = require( './ajax' );
  * @returns {XMLHttpRequest|*}
  */
 module.exports = function ( url, success, error, jsonpCallback ) {
-    return jsonpCallback
+    jsonpCallback
         ? jsonPadding(
         jsonpCallback,
         url,

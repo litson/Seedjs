@@ -9,7 +9,6 @@
 
 'use strict';
 var $       = require( './$' );
-var win     = window;
 var REG     = require( './REG' );
 var noop    = require( './noop' );
 var warn    = require( './warn' );
