@@ -2,7 +2,7 @@
  * @file
  * @fileoverview
  *              可以将您的 js 、 css 文件在 localStorage 中管理的库。
- *              Document：https://github.com/litson/Seedjs/blob/master/README.md
+ *              使用文档：https://github.com/litson/Seedjs/blob/master/README.md
  *
  * @authors      zhangtao23
  * @date         2016/2/3
@@ -59,10 +59,34 @@ var dependencies = {};
 var seed = {
 
     /**
+     * 用来在页面中加载一个或多个文件
      *
-     * @param ids
-     * @param ready
-     * @returns {*}
+     * e.g
+     *
+     *      // 加载一个文件
+     *      Seed.use( './jQuery.js' );
+     *
+     *      // 加载完成后执行回调
+     *      Seed.use( './jQuery.js' , function(){
+     *
+     *          $('.element').show();
+     *
+     *      });
+     *
+     *      // 加载多个文件,加载完成后执行回调
+     *      Seed.use( [ './jQuery.js', './bootstrap.css' ], function(){
+     *
+     *          $('.element').append(
+     *              '<div class="alert alert-warning"> jquery & bootstrap loaded. </div>'
+     *          )
+     *
+     *      } );
+     *
+     *
+     *
+     *
+     * @param {Array | String} ids 文件列表
+     * @param {Function} ready 回调
      */
     use: function ( ids, ready ) {
 
@@ -87,6 +111,7 @@ var seed = {
             return this;
         }
 
+        // 采用引用对象Function来做key，保证唯一性（反其道而行）
         if ( Object.prototype.toString.call( ready ) !== '[object Function]' ) {
             ready = noop();
         }
@@ -108,15 +133,36 @@ var seed = {
 
         // 由docker处理加载任务
         _docker( dependencies[index].deps );
-        return this;
     },
 
     /**
      *
-     * @param ready
-     * @returns {*}
+     * 我们的文件可以在DOM中指定位置，
+     * 这样就可以避免冲突（样式加载顺序）,当然显性的指定文件顺序也是可以避免冲突的。
+     *
+     * 在DOM中使用 data-[delimiter] 标记指定的特殊元素占位符，可以使得依赖关系更明确。
+     *
+     * e.g
+     *
+     *      html
+     *
+     *          <script data-seed="./jQuery.js"></script>
+     *          <style data-seed="./bootstrap.css"></style>
+     *
+     *     js
+     *
+     *          Seed.scan( function(){
+     *
+     *                 $('.element').append(
+     *                     '<div class="alert alert-warning"> jquery & bootstrap loaded. </div>'
+     *                 )
+     *
+     *          } );
+     *
+     * @param {Function} ready 回调
      */
     scan: function ( ready ) {
+
         var files = $( '[data-' + data.delimiter + ']' );
         var len   = files.length;
         var ids   = [];
@@ -129,14 +175,25 @@ var seed = {
             ids.push( files[i].dataset[data.delimiter] );
         }
 
-        return this.use( ids, ready );
+        this.use( ids, ready );
     },
 
-    data      : data,
-    cache     : cache,
-    config    : require( './setConfig' ),
-    setItem   : localDataWorker.setItem,
-    getItem   : localDataWorker.getItem,
+    // @type {Object} 成员，配置
+    data: data,
+
+    // @type {Object} 成员，缓存
+    cache: cache,
+
+    // @type {Function} 成员方法，批量配置
+    config: require( './setConfig' ),
+
+    // @type {Function} 成员方法，从本地存储中插入值
+    setItem: localDataWorker.setItem,
+
+    // @type {Function} 成员方法，从本地存储中获取值
+    getItem: localDataWorker.getItem,
+
+    // @type {Function} 成员方法，从本地存储中移除或情况值
     removeItem: localDataWorker.removeItem
 };
 
