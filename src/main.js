@@ -273,6 +273,14 @@ function _parseIds( ids, index ) {
     } );
 }
 
+/**
+ *
+ * 分析下传进来的ID，没有做像node中path.resolve的分析，
+ * 当然将ID全部分析为绝对路径更好。
+ *
+ * @param {string} id id
+ * @return {string} 分析后的id
+ */
 function resolveId( id ) {
 
     var first = id.charCodeAt( 0 );
@@ -289,7 +297,7 @@ function resolveId( id ) {
     }
 
     // 当 uri为 // 开头，加上协议
-    if ( id.indexOf( "//" ) === 0 ) {
+    if ( id.indexOf( '//' ) === 0 ) {
         id = location.protocol + id;
     }
 
