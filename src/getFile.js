@@ -11,8 +11,7 @@ var conf        = require( './CONFIG' );
  * @param {String} jsonpCallback jsonp前缀
  */
 module.exports = function ( url, success, error, jsonpCallback ) {
-
-    // 转向偏业务； this指向当前操作的 “seed文件” 对象
+    
     var _success = function ( ajaxData ) {
         ( conf.load && conf.load( ajaxData ) === false )
             ? error()

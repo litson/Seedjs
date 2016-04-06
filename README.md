@@ -4,6 +4,11 @@
 
 [文档：http://litson.github.io/archives/2016/test/index.html](http://litson.github.io/archives/2016/test/index.html#clear)
 
+@note: 
+
+- 文档较老，请已该自述文件为准; 
+- 文档即采用Seed作为主轴，欢迎体验；
+
 ## 全局配置
 
 ### data.delimiter
@@ -43,7 +48,7 @@
  
    ```js
        
-        Seed.data.base = 'http://localhost:63342/GITHUB/Seedjs';
+        Seed.data.base = 'http://www.domain.com/assets/';
            
     ```
   
@@ -243,7 +248,8 @@
     该方法省去了手动在 `js` 中填写 资源列表的麻烦，也让页面中资源的依赖关系一目了然。
     
     ```html
-    
+	
+    	<!-- 假设 delimiter 被设置为 "src" -->
         <style data-src="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css"></style>
         <script data-src="//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
     

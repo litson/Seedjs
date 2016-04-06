@@ -4,7 +4,7 @@
  */
 module.exports = {
     // @type {String} 路径基准
-    base     : window.location.origin,
+    base     : location.origin,
     // @type {Boolean} 开启无缓模式
     debug    : false,
     // @type {String | Null} jsonp前缀
