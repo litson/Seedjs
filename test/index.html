@@ -74,10 +74,11 @@
 </div>
 
 <script data-src="//cdn.bootcss.com/require.js/2.1.22/require.js"></script>
+<script data-src="http://cdn.bootcss.com/1.0/abc.min.js"></script>
 <script data-src="http://cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js"></script>
 <script data-src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 <script src="../dist/seed.js"></script>
-<script data-src="../dist/seedRequire.js"></script>
+<script data-src="./seedRequire.js"></script>
 <script>
     /* global markdown */
     /* global requirejs */
@@ -92,7 +93,7 @@
         Seed.config( {
             //jsonp:'aaa',
             // 调试模式开启，不会存储资源
-             debug: true,
+//             debug: true,
             // base: '/GITHUB/Seedjs/test',
             /*map : function ( url ) {
              var datas  = url.match( /^(.*\/)(.*)$/i );
@@ -112,7 +113,14 @@
              );
              return result;
              },*/
-
+            load     : function ( ajaxData ) {
+                if ( ajaxData ) {
+                    return false;
+                }
+            },
+            map      : function ( url, data ) {
+                return data;
+            },
             delimiter: 'src'
         } );
 

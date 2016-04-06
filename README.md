@@ -93,6 +93,31 @@
     ```
     
     该配置可对文件路径进行映射修改，可用于路径转换、在线调试等。
+
+### data.load
+
+- 类型： `Function`
+- 默认值： `null`
+- 用法：
+
+    ```js
+    
+        // 一个蠢sample；
+        Seed.data.load = function ( ajaxData ) {
+			if( ajaxData.indexOf( '404 not found' ) !== -1 ) {
+				return false;
+			}
+        }
+        
+    ```
+
+	[记录一个致命的问题](https://github.com/litson/Seedjs/issues/1)
+    
+    将每次通过 `ajax`（或 `jsonp` ）获取的文件字符串（ `responseText` ）返回给这个钩子函数，
+
+	由这个钩子函数判断返回值是否符合预期，不符合则可以返回 `false` 中断该文件的加载，那么再次刷新页面
+
+	（或再次执行）的时候，会从新向服务器获取。
     
 ## API
 
