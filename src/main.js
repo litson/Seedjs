@@ -530,4 +530,7 @@ function _execute( ids, index ) {
     _queue[index]();
 }
 
+// 自动扫描
+seed.scan();
+
 module.exports = seed;

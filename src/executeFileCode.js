@@ -40,9 +40,14 @@ module.exports = function ( data ) {
 
     // 获得文件类型对应的字段
     var temp = attr[data.fileType];
+    var node = data.position;
+
+    if ( temp.tagName === 'style' || !data.position ) {
+        node = doc.createElement( temp.tagName );
+    }
 
     // 获取元素位置（若参数data中含有文件位置则使用，否，则创建）
-    var node = data.position || doc.createElement( temp.tagName );
+    // var node = data.position || doc.createElement( temp.tagName );
 
     // 批量附加属性
     for ( var key in temp.props ) {
@@ -52,6 +57,9 @@ module.exports = function ( data ) {
     // 塞到DOM
     if ( !data.position ) {
         doc.head.appendChild( node );
+    } else if ( temp.tagName === 'style' ) {
+        doc.head.insertBefore( node, data.position );
+        data.position.parentNode.removeChild( data.position );
     }
 
     // 干掉标记
