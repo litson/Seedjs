@@ -1,3 +1,5 @@
+[TOC]
+
 # Seedjs
 
 可以将您的 `js` 、 `css` 文件在 `localStorage` 中管理。
