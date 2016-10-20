@@ -2,6 +2,24 @@
 
 可以将您的 `js` 、 `css` 文件在 `localStorage` 中管理。
 
+```js
+
+	Seed.use(
+            [
+                '//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css',
+                '//cdn.bootcss.com/jquery/3.0.0-beta1/jquery.min.js'
+            ],
+            function () {
+	    
+                $('body').append(
+                    '<div class="alert alert-warning"> bootstrap、jQuery 准备完毕。 </div>'
+                );
+		
+            }
+        );
+	
+```
+
 ## 全局配置
 
 ### data.delimiter
