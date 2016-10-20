@@ -1,15 +1,6 @@
-[TOC]
-
 # Seedjs
 
 可以将您的 `js` 、 `css` 文件在 `localStorage` 中管理。
-
-[文档：http://litson.github.io/archives/2016/test/index.html](http://litson.github.io/archives/2016/test/index.html#clear)
-
-@note: 
-
-- 文档较老，请已该自述文件为准; 
-- 文档即采用Seed作为主轴，欢迎体验；
 
 ## 全局配置
 
