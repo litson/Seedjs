@@ -207,7 +207,7 @@
     - `{String} key`
 - 用法：
     
-    对 `localStorage.setItem` 的封装，无参调用，会清除所有的 `localStorage`。
+    对 `localStorage.removeItem` 的封装，无参调用，会清除所有的 `localStorage`。
     
     内部做了是否支持 `localStorage` 的检测。
     
@@ -220,7 +220,7 @@
 ### Seed.use( ids, ready )
 
 - 参数：
-    - `{String} ids | {Array} ids`
+    - `{String} id | {Array} ids`
     - `{Function} ready`
 - 用法：
 
